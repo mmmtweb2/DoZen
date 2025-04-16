@@ -1,0 +1,839 @@
+
+/* --- הגדרות בסיס ומשתני צבע משופרים --- */
+:root {
+  --font-main: 'Inter', sans-serif;
+  --color-primary: #4F46E5; /* סגול-כחול (אינדיגו) */
+  --color-primary-dark: #4338CA;
+  --color-accent: #14B8A6; /* טורקיז/טיל - צבע הדגשה משני */
+  --color-accent-dark: #0D9488;
+  --color-text: #1F2937; /* אפור כהה יותר לטקסט */
+  --color-text-medium: #6B7280; /* אפור בינוני */
+  --color-text-light: #9CA3AF; /* אפור בהיר */
+  --color-border: #E5E7EB; /* גבול */
+  --color-background: #F9FAFB; /* רקע דף כללי */
+  --color-background-alt: #FFFFFF; /* רקע לבן */
+  --color-sidebar-bg: color-mix(in srgb, var(--color-primary) 4%, #FFFFFF); /* רקע תכלת בהיר מאוד לסיידבר */
+  --color-main-bg: #FFFFFF; /* רקע לבן לתוכן */
+  --color-success: #10B981; /* ירוק */
+  --color-success-dark: #059669;
+  --color-danger: #EF4444; /* אדום */
+  --color-danger-dark: #DC2626;
+  --color-warning: #F59E0B; /* צהוב/כתום */
+  --color-warning-dark: #D97706;
+  --color-secondary: #6B7280; /* אפור משני */
+  --color-secondary-dark: #4B5563;
+  --color-hover-light: #f8fafc; /* רקע עדין ל-hover */
+  --color-hover-blueish: #eef2ff; /* רקע כחלחל ל-hover */
+
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-focus: 0 0 0 3px color-mix(in srgb, var(--color-primary) 30%, transparent); /* צל לפוקוס */
+}
+
+/* --- איפוס וסגנון גלובלי --- */
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.5;
+  direction: rtl;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- עיצוב כללי לאפליקציה (פריסה) --- */
+.app-layout {
+  display: flex;
+  max-width: 1000px;
+  height: calc(100vh - 6rem);
+  max-height: 750px;
+  margin: 3rem auto;
+  background-color: var(--color-background-alt);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* --- עמודת התיקיות (סרגל צד) --- */
+.folder-list-container {
+  width: 240px;
+  padding: 1.5rem 1rem;
+  border-inline-end: 1px solid var(--color-border);
+  background-color: var(--color-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* כותרת "תיקיות" וכפתור הבית */
+.folder-list-container h2 {
+  text-align: start;
+  color: var(--color-text);
+  margin: 0 0 0.75rem 0;
+  padding-inline-start: 0.5rem;
+  font-size: 1.1em;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.home-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  color: var(--color-text-medium);
+  border-radius: var(--border-radius-md);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+}
+.home-button:hover {
+  background-color: var(--color-hover-blueish);
+  color: var(--color-primary);
+}
+.home-button svg {
+  stroke: currentColor;
+}
+
+/* רשימת התיקיות */
+.folder-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* הרשימה תופסת את הגובה הפנוי */
+  overflow-y: auto; /* מאפשרת גלילה פנימית */
+  min-height: 0; /* חשוב לחישוב גובה נכון ב-flexbox */
+  margin-bottom: 1rem; /* רווח לפני הטופס */
+}
+
+.folder-item {
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  font-size: 0.95em;
+  font-weight: 500;
+  color: var(--color-text-medium);
+  display: flex;
+  align-items: center;
+  text-align: start;
+}
+.folder-item:hover {
+  background-color: var(--color-hover-blueish);
+  color: var(--color-primary);
+  transform: translateX(-2px);
+}
+.folder-item.selected {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+.folder-item.selected:hover {
+  background-color: var(--color-primary-dark);
+  transform: none;
+}
+
+/* טופס הוספת תיקיה */
+.add-folder-form {
+  display: block; /* <-- שינינו מ-flex ל-block */
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.add-folder-form input[type='text'] {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: 0.9em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.add-folder-form input[type='text']:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+.add-folder-form button {
+ padding: 0.5rem;  /* אפשר לשנות לריווח אנכי/אופקי אם רוצים */
+  padding: 0.6rem 0.8rem; /* נגדיל מעט את הריווח האנכי */
+  
+  width: 100%;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.add-folder-form button:hover {
+  background-color: var(--color-accent-dark);
+}
+.add-folder-form button svg {
+   stroke: currentColor;
+}
+
+
+/* --- עמודת התוכן המרכזי --- */
+.main-content {
+  flex-grow: 1;
+  padding: 1.5rem 2rem;
+  overflow-y: auto;
+  background-color: var(--color-main-bg);
+}
+.main-content h1 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: start;
+}
+
+/* טופס הוספת משימה */
+.add-task-form-detailed {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-border);
+}
+.form-row {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  align-items: flex-end;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-basis: 150px;
+}
+.form-group label {
+  font-size: 0.8em;
+  color: var(--color-text-medium);
+  margin-bottom: 0.25rem;
+  text-align: start;
+  font-weight: 500;
+}
+.task-input-main {
+  flex-grow: 3;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: 1em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.task-input-main:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+.date-input, .priority-select {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: 0.9em;
+  font-family: var(--font-main);
+  background-color: var(--color-background-alt);
+  height: 42px;
+}
+.date-input:focus, .priority-select:focus {
+   outline: none;
+   border-color: var(--color-primary);
+   box-shadow: var(--shadow-focus);
+}
+.priority-select { cursor: pointer; }
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  background-image: linear-gradient(to right, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 80%, var(--color-accent)) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-grow: 0;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  height: 42px;
+}
+.submit-button:hover {
+  background-image: linear-gradient(to right, var(--color-primary-dark) 0%, color-mix(in srgb, var(--color-primary-dark) 80%, var(--color-accent-dark)) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* רשימת המשימות */
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0 0;
+}
+
+/* פריט משימה */
+.task-item-wrapper {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-background-alt);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.task-item-wrapper:hover {
+   background-color: var(--color-background-alt);
+   border-color: var(--color-border);
+   box-shadow: var(--shadow-md);
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  min-height: auto;
+}
+
+.task-item input[type='checkbox'] {
+  margin-inline-end: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-primary);
+}
+.task-item input[type='checkbox']:focus {
+   outline: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+   outline-offset: 1px;
+}
+
+.task-main-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin-inline-end: 1rem;
+}
+.task-item .task-text {
+  word-break: break-word;
+  color: var(--color-text);
+  transition: color 0.2s ease;
+  text-align: start;
+  font-weight: 500;
+  font-size: 1.05em;
+}
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--color-text-light);
+  font-weight: 400;
+}
+
+/* פרטי משימה (תאריך, עדיפות) */
+.task-details {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 0.4rem;
+  font-size: 0.85em;
+  color: var(--color-text-medium);
+}
+.detail-item {
+  position: relative;
+  display: inline-block;
+}
+.due-date,
+/* אינדיקטור עדיפות (טקסט עם רקע) */
+.priority-indicator {
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease; /* הוספנו color */
+  padding: 0.15rem 0.6rem; /* ריווח פנימי מחודש */
+  border-radius: var(--border-radius-lg); /* פינות מעוגלות יותר */
+  display: inline-flex;
+  align-items: center;
+  gap: 0; /* אין צורך ב-gap */
+  vertical-align: middle;
+  font-weight: 500; /* משקל פונט */
+  font-size: 0.9em; /* גודל פונט יחסי */
+  /* הסרנו width, height */
+}
+/* הסרת כלל ה-SVG כי אין יותר SVG */
+/* .priority-indicator svg { ... } */
+
+/* צבעי רקע וטקסט לפי עדיפות */
+.priority-low {
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); /* רקע כחול בהיר מאוד */
+  color: var(--color-primary-dark); /* טקסט כחול כהה */
+}
+.priority-medium {
+  background-color: color-mix(in srgb, var(--color-warning) 15%, transparent); /* רקע כתום בהיר מאוד */
+  color: var(--color-warning-dark); /* טקסט כתום כהה */
+}
+.priority-high {
+  background-color: color-mix(in srgb, var(--color-danger) 12%, transparent); /* רקע אדום בהיר מאוד */
+  color: var(--color-danger-dark); /* טקסט אדום כהה */
+}
+
+/* עיצוב כשאין ערך */
+.priority-indicator.no-value {
+  color: var(--color-text-light);
+  font-style: italic;
+  opacity: 0.8;
+  background-color: transparent; /* ללא רקע כשאין ערך */
+}
+.priority-indicator.no-value:hover {
+  background-color: transparent;
+}
+
+/* אפקט Hover כללי */
+.priority-indicator:hover {
+  /* אפשר להבהיר מעט את הרקע או להשאיר ללא שינוי */
+   filter: brightness(1.1);
+}
+
+.priority-indicator.no-value {
+  background-color: var(--color-text-light);
+  opacity: 0.6;
+  font-style: normal;
+}
+/* הסרת צבעי רקע מה-span, הצבע נקבע ע"י ה-SVG */
+.priority-low { /* background-color: var(--color-primary); */ }
+.priority-medium { /* background-color: var(--color-warning); */ }
+.priority-high { /* background-color: var(--color-danger); */ }
+/* צבע המילוי (fill) של העיגול לפי עדיפות */
+.priority-low svg { fill: var(--color-primary); }
+.priority-medium svg { fill: var(--color-warning); }
+.priority-high svg { fill: var(--color-danger); }
+.priority-indicator.no-value svg {
+   fill: var(--color-text-light);
+   opacity: 0.6;
+}
+
+/* כפתורי פעולה */
+.task-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.task-item-wrapper:hover .task-actions {
+  opacity: 1;
+}
+.task-actions button, .edit-mode button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin-inline-start: 0.2rem;
+  cursor: pointer;
+  border-radius: var(--border-radius-md);
+  font-size: 0.9em;
+  line-height: 1;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  color: var(--color-text-light);
+}
+.task-actions button:hover, .edit-mode button:hover {
+  background-color: var(--color-hover-light);
+}
+.edit-btn:hover { color: var(--color-warning-dark); }
+.delete-btn:hover { color: var(--color-danger-dark); }
+.save-btn { color: var(--color-success); }
+.save-btn:hover { color: var(--color-success-dark); background-color: color-mix(in srgb, var(--color-success) 10%, transparent); }
+.cancel-btn { color: var(--color-secondary); }
+.cancel-btn:hover { color: var(--color-secondary-dark); background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent); }
+
+/* מצב עריכה */
+.edit-mode {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+}
+.edit-input {
+  flex-grow: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  margin-inline-end: 0.5rem;
+  font-size: 0.95em;
+}
+.edit-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-focus);
+}
+.inline-edit-input {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--border-radius-md);
+  font-size: 0.9em;
+  font-family: var(--font-main);
+}
+.inline-edit-input:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+.date-edit-input { }
+.priority-edit-select { }
+
+/* --- עיצוב תתי-משימות --- */
+.subtasks-section {
+  padding-inline-start: 3rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.add-subtask-form {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.add-subtask-input {
+  flex-grow: 1;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  margin-inline-end: 0.4rem;
+  font-size: 0.85em;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.add-subtask-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent);
+}
+.add-subtask-btn {
+  padding: 0.4rem;
+  width: 28px;
+  height: 28px;
+  background-color: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+.add-subtask-btn:hover {
+  background-color: var(--color-accent-dark);
+}
+.add-subtask-btn svg { stroke: currentColor; }
+.subtask-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0 0;
+}
+.subtask-item {
+  display: flex;
+  align-items: center;
+  padding: 0.4rem 0;
+  margin-bottom: 0.25rem;
+  min-height: auto;
+  transition: background-color 0.15s ease;
+  border-radius: var(--border-radius-sm);
+}
+.subtask-item:hover {
+   background-color: var(--color-hover-light);
+}
+.subtask-item input[type='checkbox'] {
+  margin-inline-end: 0.75rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+.subtask-item input[type='checkbox']:focus {
+   outline: 2px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+   outline-offset: 1px;
+}
+.subtask-item .subtask-text {
+  flex-grow: 1;
+  margin-inline-end: 0.75rem;
+  word-break: break-word;
+  color: var(--color-text-medium);
+  transition: color 0.2s ease;
+  text-align: start;
+  font-size: 0.9em;
+}
+.subtask-item.completed .subtask-text {
+  text-decoration: line-through;
+  color: var(--color-text-light);
+}
+.subtask-item:hover .task-actions {
+  opacity: 1;
+}
+
+/* --- עיצוב הדשבורד --- */
+.dashboard-container { padding: 1rem; }
+.dashboard-container h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--color-text);
+  text-align: start;
+}
+.dashboard-stats {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border); /* הוספת גבול עדין */
+}
+.dashboard-stats p {
+  margin: 0.5rem 0;
+  color: var(--color-text-medium);
+}
+.dashboard-stats strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+.dashboard-section {
+  margin-top: 1.5rem;
+}
+.dashboard-section h3 {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.3rem;
+}
+.dashboard-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.dashboard-task-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.2rem; /* הגדלת ריווח */
+  border-bottom: 1px solid var(--color-border); /* גבול מעט כהה יותר */
+  font-size: 0.9em;
+}
+.dashboard-task-list li:last-child {
+  border-bottom: none;
+}
+.dashboard-task-list .task-text {
+  color: var(--color-text);
+}
+.dashboard-task-list .due-date {
+  color: var(--color-text-light);
+  font-size: 0.9em;
+  white-space: nowrap;
+  margin-inline-start: 1rem;
+}
+.overdue-list li .task-text {
+  color: var(--color-danger);
+}
+.overdue-list li .due-date {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+.no-tasks-message {
+  color: var(--color-text-light);
+  font-size: 0.9em;
+  padding: 0.5rem 0;
+}
+
+/* --- עיצוב אייקונים כללי --- */
+svg {
+  vertical-align: middle;
+  display: inline-block;
+}
+
+/* --- התאמות עיצוב לאלמנטים עם אייקונים --- */
+.due-date svg {
+  width: 1em;
+  height: 1em;
+  stroke-width: 1.8;
+  color: var(--color-text-medium);
+}
+
+/* --- עיצוב כפתורי מיון --- */
+.sort-controls {
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap; /* גלישה אם צריך */
+  gap: 0.5rem;
+  font-size: 0.9em;
+}
+.sort-controls span {
+  color: var(--color-text-medium);
+  margin-inline-end: 0.5rem;
+}
+.sort-controls button {
+  background-color: var(--color-background-alt); /* רקע לבן */
+  color: var(--color-text-medium);
+  border: 1px solid var(--color-border);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--border-radius-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9em;
+}
+.sort-controls button:hover {
+  background-color: var(--color-hover-blueish);
+  border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+  color: var(--color-primary);
+}
+.sort-controls button.active {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* מסך כניסה והרשמה */
+
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* תופס את כל גובה המסך */
+  padding: 2rem;
+}
+
+.auth-form-container {
+  background-color: var(--color-background-alt); /* רקע לבן */
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 400px; /* רוחב מקסימלי לטופס */
+  text-align: center; /* מרכוז הכותרת */
+}
+
+.auth-form-container h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* שימוש חוזר בעיצוב form-group מהטופס הראשי */
+.auth-form-container .form-group {
+  margin-bottom: 1rem;
+  text-align: start; /* יישור התווית לימין */
+}
+.auth-form-container .form-group label {
+   /* אפשר להשתמש באותו עיצוב כמו קודם */
+   font-size: 0.85em;
+   color: var(--color-text-medium);
+   margin-bottom: 0.3rem;
+   display: block; /* כדי שהתווית תהיה מעל */
+}
+.auth-form-container input[type="text"],
+.auth-form-container input[type="email"],
+.auth-form-container input[type="password"] {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  font-size: 1em;
+  font-family: var(--font-main);
+}
+.auth-form-container input:focus {
+   outline: none;
+   border-color: var(--color-primary);
+   box-shadow: var(--shadow-focus);
+}
+
+.auth-button {
+  width: 100%;
+  padding: 0.8rem 1.5rem;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1em;
+  transition: background-color 0.2s ease;
+  margin-top: 1rem; /* רווח מעל הכפתור */
+}
+.auth-button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* כפתור המעבר בין הרשמה להתחברות */
+.switch-auth-button {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 1.5rem;
+  padding: 0.25rem;
+}
+.switch-auth-button:hover {
+  text-decoration: underline;
+}
+
+/* עיצוב הודעת שגיאה */
+.error-message {
+  color: var(--color-danger);
+  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  margin-bottom: 1rem;
+  font-size: 0.9em;
+}
+
+/* עיצוב כפתורי פעולה עליונים בסיידבר */
+.sidebar-top-actions {
+  display: flex;
+  justify-content: space-between; /* ממקם את הכפתורים בקצוות */
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+/* עיצוב כפתור התנתקות */
+.logout-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--color-secondary); /* צבע אפור */
+  border-radius: var(--border-radius-md);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-button:hover {
+  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent); /* רקע אדמדם עדין */
+  color: var(--color-danger); /* צבע אדום */
+}
+
+.logout-button svg {
+  stroke: currentColor;
+}
