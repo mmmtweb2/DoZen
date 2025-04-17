@@ -5,99 +5,97 @@ import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';
 import Dashboard from './components/Dashboard';
 import { useAuth } from './context/AuthContext';
-import LoginPage from './pages/loginPage.jsx'; // מומלץ להוסיף סיומת
-import RegisterPage from './pages/RegisterPage.jsx'; // מומלץ להוסיף סיומת
-import apiService from './services/apiService'; // ייבוא שירות ה-API
+import LoginPage from './pages/loginPage';
+import RegisterPage from './pages/registerPages';
+import apiService from './services/apiService';
 
 function App() {
-  // --- שימוש ב-AuthContext ---
+  // Auth context
   const { user, loading, logout } = useAuth();
-  // ---------------------------
 
-  // --- State ---
-  const [folders, setFolders] = useState([]); // מתחיל ריק - נטען מה-API
-  const [tasks, setTasks] = useState([]); // מתחיל ריק - נטען מה-API
+  // State
+  const [folders, setFolders] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState(null);
   const [currentView, setCurrentView] = useState('dashboard');
   const [sortBy, setSortBy] = useState('default');
   const [sortOrder, setSortOrder] = useState('asc');
   const [authView, setAuthView] = useState('login');
-  // אפשר להוסיף state נפרד לטעינת משימות אם רוצים חיווי ספציפי
-  // const [tasksLoading, setTasksLoading] = useState(false);
 
-  // --- טעינת תיקיות ראשונית ---
+  // Load folders when user is authenticated
   useEffect(() => {
     const loadFolders = async () => {
-      if (!user) return; // טען רק אם יש משתמש
+      if (!user) return;
+
       try {
-        console.log("Attempting to fetch folders...");
         const fetchedFolders = await apiService.getFolders();
-        console.log("Fetched folders:", fetchedFolders);
         setFolders(fetchedFolders || []);
       } catch (error) {
         console.error("Failed to fetch folders:", error);
-        setFolders([]); // איפוס במקרה שגיאה
-        // טיפול אפשרי בשגיאת 401 (טוקן לא תקין)
-        // if (error.message.includes('401') || error.response?.status === 401) { logout(); }
+        setFolders([]);
       }
     };
-    loadFolders();
-  }, [user]); // תלות ב-user
 
-  // --- טעינת משימות בעת בחירת תיקיה ---
+    loadFolders();
+  }, [user]);
+
+  // Load tasks when folder is selected
   useEffect(() => {
     const loadTasks = async () => {
       if (!selectedFolderId || !user) {
         setTasks([]);
         return;
       }
-      // setTasksLoading(true); // התחלת טעינה ספציפית
+
       try {
-        console.log(`Fetching tasks for folder: ${selectedFolderId}`);
         const fetchedTasks = await apiService.getTasks(selectedFolderId);
-        console.log("Fetched tasks:", fetchedTasks);
-        // MongoDB מחזיר _id, נוודא שה-state משתמש בו
-        // אם הקומפוננטות מצפות ל-id, נצטרך למפות או לשנות שם
-        // כרגע נשאיר _id, ונצטרך להתאים קומפוננטות אם צריך
         setTasks(fetchedTasks || []);
       } catch (error) {
         console.error("Failed to fetch tasks:", error);
         setTasks([]);
-      } finally {
-        // setTasksLoading(false); // סיום טעינה ספציפית
       }
     };
-    loadTasks();
-  }, [selectedFolderId, user]); // תלוי גם ב-user וגם בתיקיה
 
-  // --- פונקציות ניהול תיקיות (addFolder מחובר ל-API) ---
+    loadTasks();
+  }, [selectedFolderId, user]);
+
+  // Folder management
   const addFolder = async (folderName) => {
     if (!folderName.trim()) return;
+
     try {
-      const newFolderFromServer = await apiService.createFolder({ name: folderName.trim() });
-      setFolders(prevFolders => [...prevFolders, newFolderFromServer]);
+      const newFolder = await apiService.createFolder({ name: folderName.trim() });
+      setFolders(prevFolders => [...prevFolders, newFolder]);
     } catch (error) {
       console.error("Failed to create folder:", error);
       alert(`שגיאה ביצירת תיקיה: ${error.message}`);
     }
   };
-  const selectFolder = (folderId) => { setSelectedFolderId(folderId); setCurrentView('folder'); };
-  const showDashboard = () => { setSelectedFolderId(null); setCurrentView('dashboard'); };
 
+  const selectFolder = (folderId) => {
+    setSelectedFolderId(folderId);
+    setCurrentView('folder');
+  };
 
-  // --- פונקציות ניהול משימות (מחוברות ל-API) ---
+  const showDashboard = () => {
+    setSelectedFolderId(null);
+    setCurrentView('dashboard');
+  };
+
+  // Task management
   const addTask = async (taskText, dueDate, priority) => {
     if (!taskText.trim() || !selectedFolderId) return;
+
     const taskData = {
       text: taskText.trim(),
       folderId: selectedFolderId,
       dueDate: dueDate || null,
       priority: priority || 'Medium'
     };
+
     try {
-      const newTaskFromServer = await apiService.createTask(taskData);
-      // הוספת המשימה החדשה שחזרה מהשרת (עם _id) ל-state
-      setTasks(prevTasks => [...prevTasks, newTaskFromServer]);
+      const newTask = await apiService.createTask(taskData);
+      setTasks(prevTasks => [...prevTasks, newTask]);
     } catch (error) {
       console.error("Failed to create task:", error);
       alert(`שגיאה ביצירת משימה: ${error.message}`);
@@ -105,27 +103,27 @@ function App() {
   };
 
   const toggleComplete = async (taskId) => {
-    const taskToToggle = tasks.find(task => task._id === taskId); // שימוש ב-_id
+    const taskToToggle = tasks.find(task => task._id === taskId);
     if (!taskToToggle) return;
-    const updateData = { completed: !taskToToggle.completed };
+
     try {
-      // שים לב: ה-API מחזיר את המשימה המעודכנת במלואה
-      const updatedTask = await apiService.updateTask(taskId, updateData);
-      // החלפת המשימה הישנה בחדשה במערך
+      const updatedTask = await apiService.updateTask(taskId, {
+        completed: !taskToToggle.completed
+      });
+
       setTasks(prevTasks => prevTasks.map(task =>
         task._id === taskId ? updatedTask : task
       ));
     } catch (error) {
-      console.error("Failed to toggle task complete:", error);
+      console.error("Failed to toggle task:", error);
       alert(`שגיאה בעדכון סטטוס משימה: ${error.message}`);
     }
   };
 
   const deleteTask = async (taskId) => {
     try {
-      await apiService.deleteTask(taskId); // קריאה ל-API למחיקה
-      // הסרת המשימה מה-state רק לאחר הצלחה
-      setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId)); // שימוש ב-_id
+      await apiService.deleteTask(taskId);
+      setTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
     } catch (error) {
       console.error("Failed to delete task:", error);
       alert(`שגיאה במחיקת משימה: ${error.message}`);
@@ -133,24 +131,25 @@ function App() {
   };
 
   const editTask = async (taskId, newText) => {
-    const updateData = { text: newText };
     try {
-      const updatedTask = await apiService.updateTask(taskId, updateData);
+      const updatedTask = await apiService.updateTask(taskId, { text: newText });
       setTasks(prevTasks => prevTasks.map(task =>
-        task._id === taskId ? updatedTask : task // שימוש ב-_id
+        task._id === taskId ? updatedTask : task
       ));
     } catch (error) {
-      console.error("Failed to edit task text:", error);
+      console.error("Failed to edit task:", error);
       alert(`שגיאה בעריכת משימה: ${error.message}`);
     }
   };
 
   const setTaskDueDate = async (taskId, dueDate) => {
-    const updateData = { dueDate: dueDate || null };
     try {
-      const updatedTask = await apiService.updateTask(taskId, updateData);
+      const updatedTask = await apiService.updateTask(taskId, {
+        dueDate: dueDate || null
+      });
+
       setTasks(prevTasks => prevTasks.map(task =>
-        task._id === taskId ? updatedTask : task // שימוש ב-_id
+        task._id === taskId ? updatedTask : task
       ));
     } catch (error) {
       console.error("Failed to set due date:", error);
@@ -159,11 +158,10 @@ function App() {
   };
 
   const setTaskPriority = async (taskId, priority) => {
-    const updateData = { priority: priority };
     try {
-      const updatedTask = await apiService.updateTask(taskId, updateData);
+      const updatedTask = await apiService.updateTask(taskId, { priority });
       setTasks(prevTasks => prevTasks.map(task =>
-        task._id === taskId ? updatedTask : task // שימוש ב-_id
+        task._id === taskId ? updatedTask : task
       ));
     } catch (error) {
       console.error("Failed to set priority:", error);
@@ -171,30 +169,143 @@ function App() {
     }
   };
 
-  // --- פונקציות תתי-משימות (עדיין מקומיות!) ---
-  // הערה: הפונקציות הבאות עדיין פועלות רק על ה-state המקומי.
-  // נצטרך ליצור API ייעודי לתתי-משימות ולחבר אותן בהמשך.
-  const addSubtask = (parentId, subtaskText) => { /* ... לוגיקה קיימת ... */ };
-  const toggleSubtaskComplete = (parentId, subtaskId) => { /* ... לוגיקה קיימת ... */ };
-  const deleteSubtask = (parentId, subtaskId) => { /* ... לוגיקה קיימת ... */ };
-  const editSubtask = (parentId, subtaskId, newText) => { /* ... לוגיקה קיימת ... */ };
-  // -------------------------------------------
+  // Subtask management
+  // Subtask management
+  const addSubtask = async (parentId, subtaskText) => {
+    if (!subtaskText.trim()) return;
 
+    try {
+      // שימוש ב-API החדש לתתי-משימות
+      const updatedTask = await apiService.addSubtask(parentId, { text: subtaskText.trim() });
 
-  // --- פונקציות מיון (ללא שינוי) ---
+      setTasks(prevTasks => prevTasks.map(task =>
+        task._id === parentId ? updatedTask : task
+      ));
+    } catch (error) {
+      console.error("Failed to add subtask:", error);
+      alert(`שגיאה בהוספת תת-משימה: ${error.message}`);
+    }
+  };
+
+  const toggleSubtaskComplete = async (parentId, subtaskId) => {
+    const parentTask = tasks.find(task => task._id === parentId);
+    if (!parentTask || !parentTask.subtasks) return;
+
+    // מציאת תת-המשימה כדי לשנות את הסטטוס שלה
+    const subtask = parentTask.subtasks.find(st => st._id === subtaskId);
+    if (!subtask) return;
+
+    try {
+      // שימוש ב-API החדש לעדכון תת-משימה
+      const updatedTask = await apiService.updateSubtask(
+        parentId,
+        subtaskId,
+        { completed: !subtask.completed }
+      );
+
+      setTasks(prevTasks => prevTasks.map(task =>
+        task._id === parentId ? updatedTask : task
+      ));
+    } catch (error) {
+      console.error("Failed to toggle subtask:", error);
+      alert(`שגיאה בעדכון סטטוס תת-משימה: ${error.message}`);
+    }
+  };
+
+  const deleteSubtask = async (parentId, subtaskId) => {
+    try {
+      // שימוש ב-API החדש למחיקת תת-משימה
+      const updatedTask = await apiService.deleteSubtask(parentId, subtaskId);
+
+      setTasks(prevTasks => prevTasks.map(task =>
+        task._id === parentId ? updatedTask : task
+      ));
+    } catch (error) {
+      console.error("Failed to delete subtask:", error);
+      alert(`שגיאה במחיקת תת-משימה: ${error.message}`);
+    }
+  };
+
+  const editSubtask = async (parentId, subtaskId, newText) => {
+    if (!newText.trim()) {
+      alert("טקסט תת-המשימה לא יכול להיות ריק.");
+      return;
+    }
+
+    try {
+      // שימוש ב-API החדש לעדכון תת-משימה
+      const updatedTask = await apiService.updateSubtask(
+        parentId,
+        subtaskId,
+        { text: newText.trim() }
+      );
+
+      setTasks(prevTasks => prevTasks.map(task =>
+        task._id === parentId ? updatedTask : task
+      ));
+    } catch (error) {
+      console.error("Failed to edit subtask:", error);
+      alert(`שגיאה בעריכת תת-משימה: ${error.message}`);
+    }
+  };
+
+  // Sorting
   const priorityMap = { High: 3, Medium: 2, Low: 1 };
-  const getSortedTasks = (tasksToSort) => { /* ... ללא שינוי ... */ };
-  const handleSortChange = (newSortBy) => { /* ... ללא שינוי ... */ };
-  // --- סוף פונקציות מיון ---
 
+  const getSortedTasks = (tasksToSort) => {
+    if (sortBy === 'default') {
+      return [...tasksToSort];
+    }
 
-  // --- חישובים לפני רינדור (ללא שינוי) ---
-  const filteredTasks = selectedFolderId ? tasks.filter(task => task.folder === selectedFolderId) : []; // שינוי קל ל-task.folder
-  const sortedAndFilteredTasks = getSortedTasks(filteredTasks);
-  const selectedFolderName = selectedFolderId ? folders.find(f => f._id === selectedFolderId)?.name : null; // שינוי ל-f._id
+    return [...tasksToSort].sort((a, b) => {
+      if (sortBy === 'dueDate') {
+        // Handle null dates
+        if (!a.dueDate && !b.dueDate) return 0;
+        if (!a.dueDate) return sortOrder === 'asc' ? 1 : -1;
+        if (!b.dueDate) return sortOrder === 'asc' ? -1 : 1;
 
-  // --- רינדור ---
-  if (loading && !user) { // הצג טעינה רק אם אין משתמש ועדיין טוען (בדיקה ראשונית)
+        return sortOrder === 'asc'
+          ? a.dueDate.localeCompare(b.dueDate)
+          : b.dueDate.localeCompare(a.dueDate);
+      }
+
+      if (sortBy === 'priority') {
+        const aPriority = priorityMap[a.priority] || 2;
+        const bPriority = priorityMap[b.priority] || 2;
+
+        return sortOrder === 'asc'
+          ? aPriority - bPriority
+          : bPriority - aPriority;
+      }
+
+      return 0;
+    });
+  };
+
+  const handleSortChange = (newSortBy) => {
+    if (newSortBy === sortBy) {
+      // Toggle order if clicking the same sort field
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      // Default orders depending on field
+      setSortOrder(newSortBy === 'priority' ? 'desc' : 'asc');
+    }
+  };
+
+  // Derived data
+  const filteredTasks = selectedFolderId
+    ? tasks.filter(task => task.folder === selectedFolderId)
+    : [];
+
+  const sortedTasks = getSortedTasks(filteredTasks);
+
+  const selectedFolderName = selectedFolderId
+    ? folders.find(f => f._id === selectedFolderId)?.name
+    : null;
+
+  // Loading state
+  if (loading && !user) {
     return <div className="loading-container"><p>טוען...</p></div>;
   }
 
@@ -212,20 +323,34 @@ function App() {
           />
           <div className="main-content">
             {currentView === 'dashboard' ? (
-              <Dashboard tasks={tasks} />
+              <Dashboard />
             ) : currentView === 'folder' && selectedFolderId ? (
               <>
                 <h1>{selectedFolderName || 'טוען תיקיה...'}</h1>
                 <AddTaskForm onAddTask={addTask} />
                 <div className="sort-controls">
                   <span>מיין לפי:</span>
-                  <button onClick={() => handleSortChange('default')} className={sortBy === 'default' ? 'active' : ''}>ברירת מחדל</button>
-                  <button onClick={() => handleSortChange('dueDate')} className={sortBy === 'dueDate' ? 'active' : ''}>תאריך יעד {sortBy === 'dueDate' && (sortOrder === 'asc' ? '↑' : '↓')}</button>
-                  <button onClick={() => handleSortChange('priority')} className={sortBy === 'priority' ? 'active' : ''}>עדיפות {sortBy === 'priority' && (sortOrder === 'desc' ? '↓' : '↑')}</button>
+                  <button
+                    onClick={() => handleSortChange('default')}
+                    className={sortBy === 'default' ? 'active' : ''}
+                  >
+                    ברירת מחדל
+                  </button>
+                  <button
+                    onClick={() => handleSortChange('dueDate')}
+                    className={sortBy === 'dueDate' ? 'active' : ''}
+                  >
+                    תאריך יעד {sortBy === 'dueDate' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </button>
+                  <button
+                    onClick={() => handleSortChange('priority')}
+                    className={sortBy === 'priority' ? 'active' : ''}
+                  >
+                    עדיפות {sortBy === 'priority' && (sortOrder === 'desc' ? '↓' : '↑')}
+                  </button>
                 </div>
-                {/* כאן אפשר להוסיף חיווי טעינה אם tasksLoading הוא true */}
                 <TaskList
-                  tasks={sortedAndFilteredTasks}
+                  tasks={sortedTasks}
                   onToggleComplete={toggleComplete}
                   onDeleteTask={deleteTask}
                   onEditTask={editTask}
@@ -252,21 +377,5 @@ function App() {
     </>
   );
 }
-
-
-// --- שכפול פונקציות המיון שהושמטו למען הקיצור ---
-// (ודא שהפונקציות המלאות נמצאות בקוד שלך למעלה)
-// const getSortedTasks = (tasksToSort) => { ... };
-// const handleSortChange = (newSortBy) => { ... };
-// --- סוף שכפול ---
-
-// --- שכפול פונקציות תתי-משימות שהושמטו למען הקיצור ---
-// (ודא שהפונקציות המלאות נמצאות בקוד שלך למעלה)
-// const addSubtask = (parentId, subtaskText) => { ... };
-// const toggleSubtaskComplete = (parentId, subtaskId) => { ... };
-// const deleteSubtask = (parentId, subtaskId) => { ... };
-// const editSubtask = (parentId, subtaskId, newText) => { ... };
-// --- סוף שכפול ---
-
 
 export default App;

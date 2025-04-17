@@ -1,6 +1,5 @@
 import React from 'react';
-import TaskItem from './TaskItem'; // ייבוא קומפוננטת פריט משימה
-
+import TaskItem from './TaskItem';
 
 function TaskList({
     tasks,
@@ -22,9 +21,7 @@ function TaskList({
         <ul className="task-list">
             {tasks.map((task) => (
                 <TaskItem
-                    // --- שינוי מ-task.id ל-task._id ---
                     key={task._id}
-                    // ---------------------------------
                     task={task}
                     onToggleComplete={onToggleComplete}
                     onDeleteTask={onDeleteTask}

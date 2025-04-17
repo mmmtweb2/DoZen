@@ -382,17 +382,30 @@ body {
 /* .priority-indicator svg { ... } */
 
 /* צבעי רקע וטקסט לפי עדיפות */
+/* צבעי רקע וטקסט לפי עדיפות */
 .priority-low {
   background-color: color-mix(in srgb, var(--color-primary) 15%, transparent); /* רקע כחול בהיר מאוד */
   color: var(--color-primary-dark); /* טקסט כחול כהה */
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9em;
+  font-weight: 500;
 }
 .priority-medium {
   background-color: color-mix(in srgb, var(--color-warning) 15%, transparent); /* רקע כתום בהיר מאוד */
   color: var(--color-warning-dark); /* טקסט כתום כהה */
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9em;
+  font-weight: 500;
 }
 .priority-high {
   background-color: color-mix(in srgb, var(--color-danger) 12%, transparent); /* רקע אדום בהיר מאוד */
   color: var(--color-danger-dark); /* טקסט אדום כהה */
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.9em;
+  font-weight: 500;
 }
 
 /* עיצוב כשאין ערך */
@@ -493,9 +506,17 @@ body {
   outline: none;
   box-shadow: var(--shadow-focus);
 }
-.date-edit-input { }
-.priority-edit-select { }
-
+.date-edit-input {
+  width: 150px;
+  cursor: pointer;
+  color: var(--color-text);
+  background-color: var(--color-background-alt);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.priority-edit-select {
+  cursor: pointer;
+  min-width: 100px;
+}
 /* --- עיצוב תתי-משימות --- */
 .subtasks-section {
   padding-inline-start: 3rem;

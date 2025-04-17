@@ -1,57 +1,58 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/authContext';
-// import './AuthPages.css'; // נייבא CSS בהמשך
+import { useAuth } from '../context/AuthContext';
 
-// הפונקציה מקבלת prop כדי לאפשר חזרה למסך ההתחברות
 function RegisterPage({ onSwitchToLogin }) {
-    // State מקומי לשדות הטופס
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    // State להודעות שגיאה
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // קבלת פונקציית ה-register מה-AuthContext
     const { register } = useAuth();
 
-    // טיפול בשליחת טופס ההרשמה
     const handleSubmit = async (event) => {
-        event.preventDefault(); // מניעת ריענון
-        setError(''); // איפוס שגיאה קודמת
+        event.preventDefault();
+        setError('');
+        setIsLoading(true);
 
-        // בדיקת קלט בסיסית
+        // Basic validation
         if (!name || !email || !password || !confirmPassword) {
             setError('אנא מלא את כל השדות');
+            setIsLoading(false);
             return;
         }
+
         if (password !== confirmPassword) {
             setError('הסיסמאות אינן תואמות');
+            setIsLoading(false);
             return;
         }
-        // אפשר להוסיף בדיקות נוספות (אורך סיסמה, תקינות אימייל)
+
+        if (password.length < 6) {
+            setError('הסיסמה חייבת להכיל לפחות 6 תווים');
+            setIsLoading(false);
+            return;
+        }
 
         try {
-            // קריאה לפונקציית ה-register מה-Context
-            // כרגע היא משתמשת בנתונים מזויפים, בהמשך נחבר ל-API
             await register(name, email, password);
-            // אם ההרשמה הצליחה, ה-AuthProvider יעדכן את ה-state
-            // והתצוגה ב-App.jsx תשתנה אוטומטית לאפליקציה הראשית.
+            // Success! The AuthContext will update the user state
         } catch (err) {
-            // טיפול בשגיאות שיגיעו מה-API (בהמשך)
             console.error("Registration failed:", err);
-            // נניח שהשגיאה היא שהאימייל כבר קיים
-            setError('הרשמה נכשלה. ייתכן שהאימייל כבר בשימוש.');
+            setError(err.message || 'הרשמה נכשלה. ייתכן שהאימייל כבר בשימוש.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        // נשתמש באותם קלאסים כמו בדף ההתחברות לעיצוב אחיד
         <div className="auth-page">
             <div className="auth-form-container">
                 <h2>הרשמה</h2>
+                {error && <p className="error-message">{error}</p>}
+
                 <form onSubmit={handleSubmit}>
-                    {error && <p className="error-message">{error}</p>} {/* הצגת הודעת שגיאה */}
                     <div className="form-group">
                         <label htmlFor="register-name">שם:</label>
                         <input
@@ -59,9 +60,11 @@ function RegisterPage({ onSwitchToLogin }) {
                             id="register-name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
+                            disabled={isLoading}
                             required
                         />
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="register-email">אימייל:</label>
                         <input
@@ -69,9 +72,11 @@ function RegisterPage({ onSwitchToLogin }) {
                             id="register-email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={isLoading}
                             required
                         />
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="register-password">סיסמה:</label>
                         <input
@@ -79,10 +84,12 @@ function RegisterPage({ onSwitchToLogin }) {
                             id="register-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            disabled={isLoading}
                             required
-                            minLength={6} // הוספת מגבלת אורך מינימלי
+                            minLength={6}
                         />
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="register-confirm-password">אימות סיסמה:</label>
                         <input
@@ -90,13 +97,25 @@ function RegisterPage({ onSwitchToLogin }) {
                             id="register-confirm-password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
+                            disabled={isLoading}
                             required
                         />
                     </div>
-                    <button type="submit" className="auth-button">הירשם</button>
+
+                    <button
+                        type="submit"
+                        className="auth-button"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'נרשם...' : 'הירשם'}
+                    </button>
                 </form>
-                {/* כפתור/קישור למעבר חזרה להתחברות */}
-                <button onClick={onSwitchToLogin} className="switch-auth-button">
+
+                <button
+                    onClick={onSwitchToLogin}
+                    className="switch-auth-button"
+                    disabled={isLoading}
+                >
                     כבר יש לך חשבון? התחבר
                 </button>
             </div>

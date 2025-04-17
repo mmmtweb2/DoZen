@@ -10,8 +10,6 @@ const PlusIcon = () => (
 function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, onShowDashboard, onLogout }) {
     const [newFolderName, setNewFolderName] = useState('');
 
-    const handleInputChange = (event) => { setNewFolderName(event.target.value); };
-
     const handleAddFolderSubmit = (event) => {
         event.preventDefault();
         const trimmedName = newFolderName.trim();
@@ -39,9 +37,9 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
                     דשבורד ראשי
                 </li>
                 <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '0.5rem 0' }} />
-                {folders.map((folder, index) => (
+                {folders.map((folder) => (
                     <li
-                        key={folder._id || `folder-${index}`} // <-- שימוש ב-index כחלופה
+                        key={folder._id}
                         className={`folder-item ${folder._id === selectedFolderId ? 'selected' : ''}`}
                         onClick={() => onSelectFolder(folder._id)}
                     >
@@ -54,7 +52,7 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
                     type="text"
                     placeholder="שם תיקיה חדשה..."
                     value={newFolderName}
-                    onChange={handleInputChange}
+                    onChange={(e) => setNewFolderName(e.target.value)}
                 />
                 <button type="submit" title="הוסף תיקיה חדשה">
                     <PlusIcon />

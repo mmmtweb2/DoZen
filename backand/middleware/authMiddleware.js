@@ -1,6 +1,6 @@
 // --- server/middleware/authMiddleware.js ---
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // נייבא את מודל המשתמש כדי למצוא את המשתמש
+const User = require('../models/User');
 
 // פונקציית Middleware להגנה על נתיבים
 const protect = async (req, res, next) => {
@@ -31,13 +31,11 @@ const protect = async (req, res, next) => {
             next();
         } catch (error) {
             console.error('Token verification failed:', error);
-            res.status(401).json({ message: 'Not authorized, token failed' }); // Unauthorized
+            return res.status(401).json({ message: 'Not authorized, token failed' }); // Unauthorized
         }
-    }
-
-    // אם אין טוקן ב-Header
-    if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' }); // Unauthorized
+    } else {
+        // אם אין טוקן ב-Header
+        return res.status(401).json({ message: 'Not authorized, no token' }); // Unauthorized
     }
 };
 

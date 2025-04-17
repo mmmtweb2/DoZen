@@ -4,22 +4,40 @@ function SubtaskItem({ subtask, parentId, onToggleSubtaskComplete, onDeleteSubta
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(subtask.text);
 
-    // --- שינוי לשימוש ב-subtask._id ---
-    const handleCheckboxChange = () => { onToggleSubtaskComplete(parentId, subtask._id); };
-    const handleDeleteClick = () => { onDeleteSubtask(parentId, subtask._id); };
-    const handleEditClick = () => { setEditText(subtask.text); setIsEditing(true); };
+    const handleCheckboxChange = () => {
+        onToggleSubtaskComplete(parentId, subtask._id);
+    };
+
+    const handleDeleteClick = () => {
+        onDeleteSubtask(parentId, subtask._id);
+    };
+
+    const handleEditClick = () => {
+        setEditText(subtask.text);
+        setIsEditing(true);
+    };
+
     const handleSaveClick = () => {
         const trimmedText = editText.trim();
-        if (trimmedText) { onEditSubtask(parentId, subtask._id, trimmedText); setIsEditing(false); }
-        else { alert("טקסט תת-המשימה לא יכול להיות ריק."); }
+        if (trimmedText) {
+            onEditSubtask(parentId, subtask._id, trimmedText);
+            setIsEditing(false);
+        } else {
+            alert("טקסט תת-המשימה לא יכול להיות ריק.");
+        }
     };
-    const handleCancelClick = () => { setIsEditing(false); };
-    const handleInputChange = (event) => { setEditText(event.target.value); };
+
+    const handleCancelClick = () => {
+        setIsEditing(false);
+    };
+
     const handleKeyDown = (event) => {
-        if (event.key === 'Enter') { handleSaveClick(); }
-        else if (event.key === 'Escape') { handleCancelClick(); }
+        if (event.key === 'Enter') {
+            handleSaveClick();
+        } else if (event.key === 'Escape') {
+            handleCancelClick();
+        }
     };
-    // ---------------------------------
 
     return (
         <li className={`subtask-item ${subtask.completed ? 'completed' : ''}`}>
@@ -31,7 +49,14 @@ function SubtaskItem({ subtask, parentId, onToggleSubtaskComplete, onDeleteSubta
             />
             {isEditing ? (
                 <div className="edit-mode">
-                    <input type="text" value={editText} onChange={handleInputChange} onKeyDown={handleKeyDown} className="edit-input" autoFocus />
+                    <input
+                        type="text"
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="edit-input"
+                        autoFocus
+                    />
                     <button onClick={handleSaveClick} className="save-btn">שמור</button>
                     <button onClick={handleCancelClick} className="cancel-btn">ביטול</button>
                 </div>

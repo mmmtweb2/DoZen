@@ -1,50 +1,46 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-// הפונקציה מקבלת prop כדי לאפשר מעבר להרשמה
 function LoginPage({ onSwitchToRegister }) {
-    // State מקומי לשדות הטופס
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    // State להודעות שגיאה
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    // קבלת פונקציית ה-login מה-AuthContext
     const { login } = useAuth();
 
-    // טיפול בשליחת טופס ההתחברות
     const handleSubmit = async (event) => {
-        event.preventDefault(); // מניעת ריענון
-        setError(''); // איפוס שגיאה קודמת
+        event.preventDefault();
+        setError('');
+        setIsLoading(true);
 
-        // בדיקת קלט בסיסית
+        // Basic validation
         if (!email || !password) {
             setError('אנא מלא אימייל וסיסמה');
+            setIsLoading(false);
             return;
         }
 
         try {
-            // קריאה לפונקציית ה-login מה-Context
-            // הפונקציה הזו אמורה כעת לקרוא ל-API האמיתי (כפי שעדכנו ב-AuthContext)
+            console.log('Attempting to login with:', email);
             await login(email, password);
-            // אם ההתחברות הצליחה, ה-AuthProvider יעדכן את ה-state
-            // והתצוגה ב-App.jsx תשתנה אוטומטית לאפליקציה הראשית.
+            // Success! The AuthContext will update the user state
         } catch (err) {
-            // טיפול בשגיאות שיגיעו מה-API דרך ה-Context
             console.error("Login failed:", err);
-            // הצגת הודעת השגיאה שהגיעה מהשרת (או הודעה כללית)
+            // הצגת הודעת השגיאה המדויקת מהשרת
             setError(err.message || 'התחברות נכשלה. בדוק אימייל וסיסמה.');
+        } finally {
+            setIsLoading(false);
         }
-        // --- הסרנו את הגדרת הפונקציה המיותרת שהייתה כאן ---
     };
 
     return (
-        // שימוש בקלאסים שהגדרנו ב-App.css למסכי אימות
         <div className="auth-page">
             <div className="auth-form-container">
                 <h2>התחברות</h2>
+                {error && <p className="error-message">{error}</p>}
+
                 <form onSubmit={handleSubmit}>
-                    {error && <p className="error-message">{error}</p>} {/* הצגת הודעת שגיאה */}
                     <div className="form-group">
                         <label htmlFor="login-email">אימייל:</label>
                         <input
@@ -52,9 +48,11 @@ function LoginPage({ onSwitchToRegister }) {
                             id="login-email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            disabled={isLoading}
                             required
                         />
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="login-password">סיסמה:</label>
                         <input
@@ -62,13 +60,25 @@ function LoginPage({ onSwitchToRegister }) {
                             id="login-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            disabled={isLoading}
                             required
                         />
                     </div>
-                    <button type="submit" className="auth-button">התחבר</button>
+
+                    <button
+                        type="submit"
+                        className="auth-button"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'מתחבר...' : 'התחבר'}
+                    </button>
                 </form>
-                {/* כפתור למעבר להרשמה */}
-                <button onClick={onSwitchToRegister} className="switch-auth-button">
+
+                <button
+                    onClick={onSwitchToRegister}
+                    className="switch-auth-button"
+                    disabled={isLoading}
+                >
                     אין לך חשבון? הירשם
                 </button>
             </div>
