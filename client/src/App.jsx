@@ -8,6 +8,7 @@ import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/loginPage';
 import RegisterPage from './pages/registerPages';
 import apiService from './services/apiService';
+import SharedItemsView from './components/sharing/SharedItemsView';
 
 function App() {
   // Auth context
@@ -21,6 +22,7 @@ function App() {
   const [sortBy, setSortBy] = useState('default');
   const [sortOrder, setSortOrder] = useState('asc');
   const [authView, setAuthView] = useState('login');
+  const [showSharedItems, setShowSharedItems] = useState(false);
 
   // Load folders when user is authenticated
   useEffect(() => {
@@ -170,7 +172,6 @@ function App() {
   };
 
   // Subtask management
-  // Subtask management
   const addSubtask = async (parentId, subtaskText) => {
     if (!subtaskText.trim()) return;
 
@@ -309,6 +310,22 @@ function App() {
     return <div className="loading-container"><p>טוען...</p></div>;
   }
 
+
+  // פונקציה להצגת תצוגת פריטים משותפים
+  const showSharedItemsView = () => {
+    setCurrentView('shared');
+    setShowSharedItems(true);
+    setSelectedFolderId(null);
+  };
+
+  // פונקציה לבחירת תיקיה משותפת
+  const selectSharedFolder = (folderId) => {
+    setSelectedFolderId(folderId);
+    setCurrentView('folder');
+    setShowSharedItems(false);
+  };
+
+
   return (
     <>
       {user ? (
@@ -322,6 +339,9 @@ function App() {
             onLogout={logout}
           />
           <div className="main-content">
+            {currentView === 'shared' && (
+              <SharedItemsView onSelectFolder={selectSharedFolder} />
+            )}
             {currentView === 'dashboard' ? (
               <Dashboard />
             ) : currentView === 'folder' && selectedFolderId ? (
@@ -375,6 +395,7 @@ function App() {
         )
       )}
     </>
+
   );
 }
 

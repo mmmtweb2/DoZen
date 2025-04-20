@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SubtaskItem from './SubtaskItem';
+import ShareButton from './sharing/ShareButton';
 
 // Optimized SVG Icons
 const CalendarIcon = () => (
@@ -110,7 +111,7 @@ function TaskItem({
     const handlePriorityBlur = () => setIsEditingPriority(false);
 
     return (
-        <div className={`task-item-wrapper ${task.subtasks?.length > 0 ? 'has-subtasks' : ''}`}>
+        <div className={`task-item-wrapper ${task.subtasks?.length > 0 ? 'has-subtasks' : ''} ${task.isOwner === false ? 'shared-task' : ''}`}>
             <li className={`task-item ${task.completed ? 'completed' : ''}`}>
                 <input
                     type="checkbox"
@@ -186,26 +187,46 @@ function TaskItem({
                         </div>
 
                         <div className="task-actions">
-                            <button onClick={handleEditClick} className="edit-btn">ערוך</button>
-                            <button onClick={handleDeleteClick} className="delete-btn">מחק</button>
+                            {/* כפתור שיתוף - רק לבעלים של המשימה */}
+                            {task.isOwner !== false && (
+                                <ShareButton
+                                    itemType="task"
+                                    itemId={task._id}
+                                    itemName={task.text}
+                                    onShared={() => console.log('Task shared successfully')}
+                                />
+                            )}
+
+                            {/* כפתור עריכה - להציג רק אם יש הרשאת עריכה או שהמשתמש הוא הבעלים */}
+                            {(task.isOwner !== false || task.accessType === 'edit') && (
+                                <button onClick={handleEditClick} className="edit-btn">ערוך</button>
+                            )}
+
+                            {/* כפתור מחיקה - להציג רק אם המשתמש הוא הבעלים */}
+                            {task.isOwner !== false && (
+                                <button onClick={handleDeleteClick} className="delete-btn">מחק</button>
+                            )}
                         </div>
                     </>
                 )}
             </li>
 
             <div className="subtasks-section">
-                <form onSubmit={handleAddSubtaskSubmit} className="add-subtask-form">
-                    <input
-                        type="text"
-                        placeholder="הוסף תת-משימה..."
-                        value={newSubtaskText}
-                        onChange={handleNewSubtaskChange}
-                        className="add-subtask-input"
-                    />
-                    <button type="submit" className="add-subtask-btn" title="הוסף תת-משימה">
-                        <PlusIcon />
-                    </button>
-                </form>
+                {/* הוספת תת-משימה רק אם יש הרשאת עריכה */}
+                {(task.isOwner !== false || task.accessType === 'edit') && (
+                    <form onSubmit={handleAddSubtaskSubmit} className="add-subtask-form">
+                        <input
+                            type="text"
+                            placeholder="הוסף תת-משימה..."
+                            value={newSubtaskText}
+                            onChange={handleNewSubtaskChange}
+                            className="add-subtask-input"
+                        />
+                        <button type="submit" className="add-subtask-btn" title="הוסף תת-משימה">
+                            <PlusIcon />
+                        </button>
+                    </form>
+                )}
 
                 {task.subtasks && task.subtasks.length > 0 && (
                     <ul className="subtask-list">
