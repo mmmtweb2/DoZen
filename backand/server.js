@@ -10,11 +10,12 @@ const folderRoutes = require('./routes/folderRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const subtaskRoutes = require('./routes/subtasksRoutes');
 
-// הגדרות CORS מפורטות
+// הגדרות CORS מפורטות - מתוקן עבור Render ו-GitHub Pages
 const corsOptions = {
-    origin: ['http://localhost:5173', 'http://localhost:3000'], // התאם לכתובות הקליינט שלך
+    origin: 'https://mmmtweb2.github.io',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200 // מומלץ להוסיף
 };
 
 // --- פונקציית חיבור אסינכרונית ל-MongoDB ---
@@ -35,7 +36,7 @@ connectDB();
 const app = express();
 
 // הגדרת middlewares בסיסיים
-app.use(cors(corsOptions));
+app.use(cors(corsOptions)); // שימוש בהגדרות CORS המעודכנות
 app.use(express.json());
 
 // נתיב בדיקה בסיסי
