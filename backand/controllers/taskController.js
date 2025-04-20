@@ -13,20 +13,64 @@ const getTasks = async (req, res) => {
     }
 
     try {
-        // וידוא שהתיקיה שייכת למשתמש המחובר (אבטחה נוספת)
+        // בדיקה האם התיקיה קיימת
         const folder = await Folder.findById(folderId);
 
         if (!folder) {
             return res.status(404).json({ message: 'Folder not found' });
         }
 
-        if (folder.user.toString() !== req.user.id) {
+        // בדיקת הרשאות גישה לתיקיה
+        const isOwner = folder.user.toString() === req.user.id;
+        const isSharedWithUser = folder.sharedWith?.some(
+            share => share.user.toString() === req.user.id
+        );
+
+        // אם המשתמש אינו הבעלים ואינו ברשימת השיתוף - אין גישה
+        if (!isOwner && !isSharedWithUser) {
             return res.status(403).json({ message: 'Not authorized to access this folder' });
         }
 
-        // מציאת כל המשימות ששייכות לתיקיה ולמשתמש המחובר
-        const tasks = await Task.find({ user: req.user.id, folder: folderId });
-        res.status(200).json(tasks);
+        // מציאת כל המשימות השייכות לתיקיה
+        const tasks = await Task.find({ folder: folderId });
+
+        // הוספת מידע על בעלות והרשאות לכל משימה
+        const tasksWithPermissions = tasks.map(task => {
+            const taskObj = task.toObject();
+
+            // בדיקה האם המשתמש הוא הבעלים של המשימה
+            const isTaskOwner = task.user.toString() === req.user.id;
+
+            // בדיקה האם המשימה משותפת ישירות עם המשתמש
+            const taskSharing = task.sharedWith?.find(
+                share => share.user.toString() === req.user.id
+            );
+
+            // מציאת הרשאות המשתמש למשימה
+            let accessType = 'none';
+
+            if (isTaskOwner) {
+                // בעלים יש לו הרשאת עריכה מלאה
+                accessType = 'edit';
+            } else if (taskSharing) {
+                // אם המשימה משותפת ישירות, קח את ההרשאה מהשיתוף
+                accessType = taskSharing.accessType;
+            } else if (isSharedWithUser) {
+                // אם התיקיה משותפת, קח את ההרשאה מהשיתוף של התיקיה
+                const folderSharing = folder.sharedWith.find(
+                    share => share.user.toString() === req.user.id
+                );
+                accessType = folderSharing?.accessType || 'view';
+            }
+
+            return {
+                ...taskObj,
+                isOwner: isTaskOwner,
+                accessType
+            };
+        });
+
+        res.status(200).json(tasksWithPermissions);
     } catch (error) {
         console.error('Error getting tasks:', error);
         res.status(500).json({ message: 'Server Error' });
@@ -48,15 +92,27 @@ const createTask = async (req, res) => {
     }
 
     try {
-        // וידוא שהתיקיה שאליה רוצים להוסיף שייכת למשתמש
+        // בדיקה האם התיקיה קיימת
         const folder = await Folder.findById(folderId);
 
         if (!folder) {
             return res.status(404).json({ message: 'Folder not found' });
         }
 
-        if (folder.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Not authorized to access this folder' });
+        // בדיקת הרשאות ליצירת משימה בתיקיה
+        const isOwner = folder.user.toString() === req.user.id;
+
+        // אם המשתמש אינו הבעלים, בדוק אם יש לו הרשאת עריכה לתיקיה
+        if (!isOwner) {
+            const sharedAccess = folder.sharedWith.find(
+                share => share.user.toString() === req.user.id
+            );
+
+            if (!sharedAccess || sharedAccess.accessType !== 'edit') {
+                return res.status(403).json({
+                    message: 'You do not have permission to create tasks in this folder'
+                });
+            }
         }
 
         // יצירת המשימה החדשה
@@ -65,8 +121,9 @@ const createTask = async (req, res) => {
             dueDate: dueDate || null,
             priority: priority || 'Medium',
             folder: folderId,
-            user: req.user.id,
-            subtasks: []
+            user: req.user.id, // המשתמש היוצר הוא תמיד הבעלים של המשימה
+            subtasks: [],
+            sharedWith: [] // אתחול מערך השיתוף כריק
         });
 
         res.status(201).json(task);
@@ -81,25 +138,50 @@ const createTask = async (req, res) => {
 // @access  Private
 const updateTask = async (req, res) => {
     try {
-        // מציאת המשימה לפי ה-ID ולפי המשתמש המחובר
-        let task = await Task.findOne({ _id: req.params.id, user: req.user.id });
+        // מציאת המשימה
+        const task = await Task.findById(req.params.id);
 
         if (!task) {
-            return res.status(404).json({ message: 'Task not found or not authorized' });
+            return res.status(404).json({ message: 'Task not found' });
         }
 
-        // וידוא שהמשתמש רשאי לערוך את המשימה (זה כבר נבדק למעלה, זה רק להבהרה)
-        if (task.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'User not authorized' });
+        // בדיקת הרשאות עריכה למשימה
+        const isOwner = task.user.toString() === req.user.id;
+
+        // בדיקה אם המשימה משותפת ישירות עם המשתמש
+        const taskSharing = task.sharedWith.find(
+            share => share.user.toString() === req.user.id
+        );
+
+        let hasEditPermission = isOwner;
+
+        // אם המשימה משותפת ישירות, בדוק הרשאות
+        if (taskSharing && taskSharing.accessType === 'edit') {
+            hasEditPermission = true;
+        }
+        // אם לא, בדוק אם התיקיה משותפת עם הרשאות עריכה
+        else if (!isOwner && !taskSharing) {
+            const folder = await Folder.findById(task.folder);
+            const folderSharing = folder?.sharedWith.find(
+                share => share.user.toString() === req.user.id
+            );
+
+            if (folderSharing && folderSharing.accessType === 'edit') {
+                hasEditPermission = true;
+            }
+        }
+
+        if (!hasEditPermission) {
+            return res.status(403).json({ message: 'You do not have permission to edit this task' });
         }
 
         // עדכון המשימה
-        task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+        const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
 
-        res.status(200).json(task);
+        res.status(200).json(updatedTask);
     } catch (error) {
         console.error('Error updating task:', error);
         res.status(500).json({ message: 'Server Error' });
@@ -111,11 +193,16 @@ const updateTask = async (req, res) => {
 // @access  Private
 const deleteTask = async (req, res) => {
     try {
-        // מציאת המשימה לפי ה-ID ולפי המשתמש המחובר
-        const task = await Task.findOne({ _id: req.params.id, user: req.user.id });
+        // מציאת המשימה
+        const task = await Task.findById(req.params.id);
 
         if (!task) {
-            return res.status(404).json({ message: 'Task not found or not authorized' });
+            return res.status(404).json({ message: 'Task not found' });
+        }
+
+        // רק הבעלים יכול למחוק משימה
+        if (task.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Only the owner can delete a task' });
         }
 
         // מחיקת המשימה

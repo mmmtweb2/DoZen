@@ -1,14 +1,36 @@
 // --- server/controllers/folderController.js ---
 const Folder = require('../models/Folder');
 
-// @desc    קבלת כל התיקיות של המשתמש המחובר
+// @desc    קבלת תיקיות של המשתמש המחובר (כולל משותפות)
 // @route   GET /api/folders
-// @access  Private (דורש אימות)
+// @access  Private
 const getFolders = async (req, res) => {
     try {
-        // req.user נוצר על ידי ה-middleware 'protect' ומכיל את פרטי המשתמש
-        const folders = await Folder.find({ user: req.user.id });
-        res.status(200).json(folders);
+        // מציאת תיקיות שהמשתמש יצר
+        const ownedFolders = await Folder.find({ user: req.user.id });
+
+        // מציאת תיקיות שמשותפות עם המשתמש
+        const sharedFolders = await Folder.find({
+            'sharedWith.user': req.user.id
+        }).populate('user', 'name email');
+
+        // שילוב שתי הרשימות, עם סימון לתיקיות משותפות
+        const allFolders = [
+            ...ownedFolders.map(folder => ({
+                ...folder.toObject(),
+                isOwner: true
+            })),
+            ...sharedFolders.map(folder => ({
+                ...folder.toObject(),
+                isOwner: false,
+                // מציאת סוג ההרשאה של המשתמש לתיקיה
+                accessType: folder.sharedWith.find(
+                    s => s.user.toString() === req.user.id
+                )?.accessType || 'view'
+            }))
+        ];
+
+        res.status(200).json(allFolders);
     } catch (error) {
         console.error('Error getting folders:', error);
         res.status(500).json({ message: 'Server Error' });
@@ -47,14 +69,16 @@ const createFolder = async (req, res) => {
 // @access  Private
 const deleteFolder = async (req, res) => {
     try {
-        // מציאת התיקיה לפי ה-ID ולפי המשתמש המחובר
-        const folder = await Folder.findOne({
-            _id: req.params.id,
-            user: req.user.id
-        });
+        // מציאת התיקיה לפי ה-ID
+        const folder = await Folder.findById(req.params.id);
 
         if (!folder) {
-            return res.status(404).json({ message: 'Folder not found or not authorized' });
+            return res.status(404).json({ message: 'Folder not found' });
+        }
+
+        // בדיקה שהמשתמש הוא הבעלים של התיקיה
+        if (folder.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized to delete this folder - you must be the owner' });
         }
 
         // מחיקת התיקיה

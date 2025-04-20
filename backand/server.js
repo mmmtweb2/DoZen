@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const folderRoutes = require('./routes/folderRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const subtaskRoutes = require('./routes/subtasksRoutes');
+const sharingRoutes = require('./routes/sharingRoutes');
 
 // הגדרות CORS מפורטות - מתוקן עבור Render ו-GitHub Pages
 const corsOptions = {
@@ -49,7 +50,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/folders', folderRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/tasks/:taskId/subtasks', subtaskRoutes);
-
+app.use('/api/sharing', sharingRoutes);
 
 // הגדרת הפורט שהשרת יאזין לו
 const PORT = process.env.PORT || 5000;

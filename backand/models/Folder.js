@@ -1,8 +1,10 @@
 // --- server/models/Folder.js ---
+const SharedAccess = require('./SharedAccess');
 const mongoose = require('mongoose');
 
 // הגדרת סכמה (מבנה) עבור תיקיה
 const folderSchema = new mongoose.Schema({
+    sharedWith: [sharedAccessSchema],
     // שם התיקיה
     name: {
         type: String,

@@ -1,8 +1,10 @@
 // --- server/models/Task.js ---
+const SharedAccess = require('./SharedAccess');
 const mongoose = require('mongoose');
 
 // הגדרת סכמה פנימית עבור תת-משימה (מוטמעת בתוך המשימה הראשית)
 const subtaskSchema = new mongoose.Schema({
+    sharedWith: [sharedAccessSchema],
     text: {
         type: String,
         required: true,
