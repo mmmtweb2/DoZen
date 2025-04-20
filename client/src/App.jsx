@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import './components/sharing/SharingStyles.css';
 import FolderList from './components/FolderList';
 import TaskList from './components/TaskList';
 import AddTaskForm from './components/AddTaskForm';

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import SubtaskItem from './SubtaskItem';
-import ShareButton from './sharing/ShareButton';
+import ShareButton from '../components/sharing/ShareButton';
+
+
+
 
 // Optimized SVG Icons
 const CalendarIcon = () => (
