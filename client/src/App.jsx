@@ -10,6 +10,7 @@ import RegisterPage from './pages/registerPages';
 import apiService from './services/apiService';
 import SharedItemsView from './components/sharing/SharedItemsView';
 
+
 function App() {
   // Auth context
   const { user, loading, logout } = useAuth();
@@ -336,8 +337,8 @@ function App() {
             onSelectFolder={selectFolder}
             onAddFolder={addFolder}
             onShowDashboard={showDashboard}
-            onLogout={logout}
             onShowSharedItems={showSharedItemsView}
+            onLogout={logout}
           />
           <div className="main-content">
             {currentView === 'shared' && (

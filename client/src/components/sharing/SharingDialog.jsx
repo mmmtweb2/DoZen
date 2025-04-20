@@ -5,6 +5,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import sharingService from '../../services/sharingService';
+import './SharingStyles.css';
 
 // אייקונים
 const CloseIcon = () => (
