@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 
 // --- 1. ייבוא ה-AuthProvider ---
-import { AuthProvider } from './context/authContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 
 
 // יצירת שורש ה-DOM
