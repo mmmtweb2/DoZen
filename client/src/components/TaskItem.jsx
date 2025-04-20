@@ -50,7 +50,7 @@ function TaskItem({
     const [isEditingDate, setIsEditingDate] = useState(false);
     const [isEditingPriority, setIsEditingPriority] = useState(false);
     const [editDateValue, setEditDateValue] = useState(task.dueDate || '');
-
+    console.log('Task prop in TaskItem:', task);
     // Event handlers
     const handleCheckboxChange = () => onToggleComplete(task._id);
     const handleDeleteClick = () => onDeleteTask(task._id);

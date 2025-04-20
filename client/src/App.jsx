@@ -32,8 +32,9 @@ function App() {
       if (!user) return;
 
       try {
-        const fetchedFolders = await apiService.getFolders();
-        setFolders(fetchedFolders || []);
+        const fetchedTasks = await apiService.getTasks(selectedFolderId);
+        console.log('Tasks received from backend:', fetchedTasks);
+        setTasks(fetchedTasks || []);
       } catch (error) {
         console.error("Failed to fetch folders:", error);
         setFolders([]);
