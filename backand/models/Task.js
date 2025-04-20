@@ -1,11 +1,9 @@
 // --- server/models/Task.js ---
-const SharedAccess = require('./SharedAccess');
 const mongoose = require('mongoose');
-
 const sharedAccessSchema = require('./SharedAccess');
 
-const folderSchema = new mongoose.Schema({
-    sharedWith: [sharedAccessSchema],
+// הגדרת סכמה פנימית עבור תת-משימה (מוטמעת בתוך המשימה הראשית)
+const subtaskSchema = new mongoose.Schema({
     text: {
         type: String,
         required: true,
@@ -17,7 +15,6 @@ const folderSchema = new mongoose.Schema({
         default: false
     }
 });
-
 
 // הגדרת סכמה (מבנה) עבור משימה ראשית
 const taskSchema = new mongoose.Schema({
@@ -46,6 +43,8 @@ const taskSchema = new mongoose.Schema({
     },
     // מערך של תתי-משימות, משתמש בסכמה שהגדרנו למעלה
     subtasks: [subtaskSchema],
+    // שדה לשיתוף משימות
+    sharedWith: [sharedAccessSchema],
     // קשר לתיקיה שאליה המשימה שייכת
     folder: {
         type: mongoose.Schema.Types.ObjectId,
