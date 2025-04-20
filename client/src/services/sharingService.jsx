@@ -4,7 +4,7 @@
  * מספק פונקציות לשיתוף, הסרת שיתוף וקבלת מידע על פריטים משותפים
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://dozen.onrender.com/api';
 
 const getToken = () => {
     return localStorage.getItem('authToken');

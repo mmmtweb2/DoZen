@@ -337,6 +337,7 @@ function App() {
             onAddFolder={addFolder}
             onShowDashboard={showDashboard}
             onLogout={logout}
+            onShowSharedItems={showSharedItemsView}
           />
           <div className="main-content">
             {currentView === 'shared' && (
