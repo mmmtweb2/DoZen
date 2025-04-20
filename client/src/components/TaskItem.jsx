@@ -191,14 +191,15 @@ function TaskItem({
 
                         <div className="task-actions">
                             {/* כפתור שיתוף - רק לבעלים של המשימה */}
-                            {task.isOwner !== false && (
-                                <ShareButton
-                                    itemType="task"
-                                    itemId={task._id}
-                                    itemName={task.text}
-                                    onShared={() => console.log('Task shared successfully')}
-                                />
-                            )}
+                            {task.isOwner === true &&
+                                (
+                                    <ShareButton
+                                        itemType="task"
+                                        itemId={task._id}
+                                        itemName={task.text}
+                                        onShared={() => console.log('Task shared successfully')}
+                                    />
+                                )}
 
                             {/* כפתור עריכה - להציג רק אם יש הרשאת עריכה או שהמשתמש הוא הבעלים */}
                             {(task.isOwner !== false || task.accessType === 'edit') && (
