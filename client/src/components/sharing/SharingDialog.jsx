@@ -3,7 +3,7 @@
  * קומפוננטת דיאלוג לניהול שיתוף תיקיות ומשימות
  * מאפשרת למשתמש לשתף פריטים עם אחרים, לנהל הרשאות ולהסיר שיתופים
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import sharingService from '../../services/sharingService';
 import './SharingStyles.css';
 

@@ -3,9 +3,8 @@
  * קומפוננטה להצגת פריטים משותפים עם המשתמש המחובר
  * מציגה תיקיות ומשימות שמשתמשים אחרים שיתפו עם המשתמש הנוכחי
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import sharingService from '../../services/sharingService';
-import '../../components/sharing/';
 import './SharingStyles.css';
 
 // אייקונים

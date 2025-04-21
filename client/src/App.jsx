@@ -7,7 +7,7 @@ import AddTaskForm from './components/AddTaskForm';
 import Dashboard from './components/Dashboard';
 import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/loginPage';
-import RegisterPage from './pages/registerPages';
+import RegisterPage from './pages/registerPage';
 import apiService from './services/apiService';
 import SharedItemsView from './components/sharing/SharedItemsView';
 
@@ -30,11 +30,9 @@ function App() {
   useEffect(() => {
     const loadFolders = async () => {
       if (!user) return;
-
       try {
-        const fetchedTasks = await apiService.getTasks(selectedFolderId);
-        console.log('Tasks received from backend:', fetchedTasks);
-        setTasks(fetchedTasks || []);
+        const fetchedFolders = await apiService.getFolders();
+        setFolders(fetchedFolders || []);
       } catch (error) {
         console.error("Failed to fetch folders:", error);
         setFolders([]);

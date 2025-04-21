@@ -24,14 +24,26 @@ function Dashboard() {
                 // 1. קבלת כל התיקיות
                 const folders = await apiService.getFolders();
 
-                // 2. קבלת משימות מכל תיקיה
+                // 2. יצירת מערך לאיסוף כל המשימות
                 let allTasksTemp = [];
-                for (const folder of folders) {
-                    try {
-                        const folderTasks = await apiService.getTasks(folder._id);
-                        allTasksTemp = [...allTasksTemp, ...folderTasks];
-                    } catch (folderError) {
-                        console.error(`Error fetching tasks for folder ${folder._id}:`, folderError);
+
+                // 3. טיפול בכל תיקיה בנפרד, אבל לא נכשלים אם תיקיה אחת נכשלת
+                if (folders && folders.length > 0) {
+                    for (const folder of folders) {
+                        try {
+                            const folderTasks = await apiService.getTasks(folder._id);
+                            if (folderTasks && Array.isArray(folderTasks)) {
+                                // הוספת שם התיקיה לכל משימה להצגה
+                                const tasksWithFolderInfo = folderTasks.map(task => ({
+                                    ...task,
+                                    folderName: folder.name
+                                }));
+                                allTasksTemp = [...allTasksTemp, ...tasksWithFolderInfo];
+                            }
+                        } catch (folderError) {
+                            console.error(`Error fetching tasks for folder ${folder.name}:`, folderError);
+                            // ממשיכים לתיקיה הבאה ולא נכשלים לגמרי
+                        }
                     }
                 }
 
