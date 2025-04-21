@@ -1,9 +1,9 @@
+// --- client/src/components/TaskItem.jsx ---
+// קוד מתוקן עם תנאים עקביים
+
 import React, { useState } from 'react';
-import SubtaskItem from './SubtaskItem';
-import ShareButton from '../components/sharing/ShareButton';
-
-
-
+import SubtaskItem from './SubtaskItem'; // ודא שהנתיב נכון אם הוא בתיקיה אחרת
+import ShareButton from '../components/sharing/ShareButton'; // ודא שהנתיב נכון
 
 // Optimized SVG Icons
 const CalendarIcon = () => (
@@ -21,7 +21,7 @@ const getPriorityText = (priority) => {
         case 'High': return 'גבוהה';
         case 'Medium': return 'בינונית';
         case 'Low': return 'נמוכה';
-        default: return 'רגילה';
+        default: return 'רגילה'; // או 'בינונית' אם זו ברירת המחדל שלך
     }
 };
 
@@ -44,13 +44,18 @@ function TaskItem({
     onSetTaskDueDate,
     onSetTaskPriority
 }) {
+    // Log for debugging the received task prop
     console.log('Task prop in TaskItem:', task);
+
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(task.text);
     const [newSubtaskText, setNewSubtaskText] = useState('');
     const [isEditingDate, setIsEditingDate] = useState(false);
     const [isEditingPriority, setIsEditingPriority] = useState(false);
-    const [editDateValue, setEditDateValue] = useState(task.dueDate || '');
+    // Initialize editDateValue correctly from task.dueDate (format YYYY-MM-DD for input type="date")
+    const initialDate = task.dueDate ? task.dueDate.split('T')[0] : '';
+    const [editDateValue, setEditDateValue] = useState(initialDate);
+
     // Event handlers
     const handleCheckboxChange = () => onToggleComplete(task._id);
     const handleDeleteClick = () => onDeleteTask(task._id);
@@ -85,7 +90,8 @@ function TaskItem({
     };
 
     const handleDateClick = () => {
-        setEditDateValue(task.dueDate || '');
+        // Update state with current task date when opening editor
+        setEditDateValue(task.dueDate ? task.dueDate.split('T')[0] : '');
         setIsEditingDate(true);
     };
 
@@ -95,32 +101,46 @@ function TaskItem({
         setEditDateValue(e.target.value);
     };
 
+    // Use onBlur for saving date change (or separate save button if preferred)
     const handleDateBlur = () => {
-        onSetTaskDueDate(task._id, editDateValue);
+        // Check if the date actually changed
+        const currentDate = task.dueDate ? task.dueDate.split('T')[0] : '';
+        if (editDateValue !== currentDate) {
+            // Allow setting null by sending an empty string or handle it server-side
+            onSetTaskDueDate(task._id, editDateValue || null);
+        }
         setIsEditingDate(false);
     };
 
     const handleDateSubmit = (e) => {
         if (e.key === 'Enter') {
-            onSetTaskDueDate(task._id, editDateValue);
-            setIsEditingDate(false);
+            handleDateBlur(); // Use the same logic as blur on Enter
         } else if (e.key === 'Escape') {
             setIsEditingDate(false);
+            // Optionally reset editDateValue to original task.dueDate here
+            setEditDateValue(task.dueDate ? task.dueDate.split('T')[0] : '');
         }
     };
 
-    const handlePriorityChange = (e) => { onSetTaskPriority(task._id, e.target.value); setIsEditingPriority(false); };
+    const handlePriorityChange = (e) => {
+        onSetTaskPriority(task._id, e.target.value);
+        setIsEditingPriority(false);
+    };
 
     const handlePriorityBlur = () => setIsEditingPriority(false);
 
+    // Format dueDate for display, handle null/undefined
+    const formattedDueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString('he-IL') : 'אין תאריך';
+
     return (
+        // Add shared-task class if the user is NOT the owner
         <div className={`task-item-wrapper ${task.subtasks?.length > 0 ? 'has-subtasks' : ''} ${task.isOwner === false ? 'shared-task' : ''}`}>
             <li className={`task-item ${task.completed ? 'completed' : ''}`}>
                 <input
                     type="checkbox"
                     checked={task.completed}
                     onChange={handleCheckboxChange}
-                    disabled={isEditing || isEditingDate || isEditingPriority}
+                    disabled={isEditing || isEditingDate || isEditingPriority || task.accessType === 'view'} // Disable checkbox if view only
                 />
 
                 {isEditing ? (
@@ -139,7 +159,10 @@ function TaskItem({
                 ) : (
                     <>
                         <div className="task-main-info">
-                            <span className="task-text" onDoubleClick={handleEditClick}>{task.text}</span>
+                            {/* Allow editing text only if user has edit permission */}
+                            <span className="task-text" onDoubleClick={(task.isOwner || task.accessType === 'edit') ? handleEditClick : undefined}>
+                                {task.text}
+                            </span>
                             <div className="task-details">
                                 <div className="detail-item date-detail">
                                     {isEditingDate ? (
@@ -155,10 +178,11 @@ function TaskItem({
                                     ) : (
                                         <span
                                             className={`due-date ${task.dueDate ? '' : 'no-value'}`}
-                                            onClick={handleDateClick}
+                                            // Allow editing date only if user has edit permission
+                                            onClick={(task.isOwner || task.accessType === 'edit') ? handleDateClick : undefined}
                                             title={task.dueDate ? "שנה תאריך יעד" : "הוסף תאריך יעד"}
                                         >
-                                            <CalendarIcon /> {task.dueDate ? task.dueDate.split('T')[0] : 'אין תאריך'}
+                                            <CalendarIcon /> {formattedDueDate}
                                         </span>
                                     )}
                                 </div>
@@ -178,11 +202,12 @@ function TaskItem({
                                         </select>
                                     ) : (
                                         <span
-                                            className={`priority-indicator ${task.priority ? `priority-${task.priority.toLowerCase()}` : 'no-value'}`}
-                                            onClick={handlePriorityClick}
+                                            className={`priority-indicator ${task.priority ? `priority-${task.priority.toLowerCase()}` : 'priority-medium'}`} // Default class if no priority
+                                            // Allow editing priority only if user has edit permission
+                                            onClick={(task.isOwner || task.accessType === 'edit') ? handlePriorityClick : undefined}
                                             title="שינוי עדיפות"
                                         >
-                                            {task.priority ? getPriorityText(task.priority) : "רגילה"}
+                                            {getPriorityText(task.priority)}
                                         </span>
                                     )}
                                 </div>
@@ -191,23 +216,22 @@ function TaskItem({
 
                         <div className="task-actions">
                             {/* כפתור שיתוף - רק לבעלים של המשימה */}
-                            {task.isOwner === true &&
-                                (
-                                    <ShareButton
-                                        itemType="task"
-                                        itemId={task._id}
-                                        itemName={task.text}
-                                        onShared={() => console.log('Task shared successfully')}
-                                    />
-                                )}
+                            {task.isOwner === true && ( // Condition updated to === true
+                                <ShareButton
+                                    itemType="task"
+                                    itemId={task._id}
+                                    itemName={task.text}
+                                    onShared={() => console.log('Task shared successfully')} // Placeholder, might need actual refresh logic
+                                />
+                            )}
 
                             {/* כפתור עריכה - להציג רק אם יש הרשאת עריכה או שהמשתמש הוא הבעלים */}
-                            {(task.isOwner !== false || task.accessType === 'edit') && (
+                            {(task.isOwner === true || task.accessType === 'edit') && ( // Condition updated to === true
                                 <button onClick={handleEditClick} className="edit-btn">ערוך</button>
                             )}
 
                             {/* כפתור מחיקה - להציג רק אם המשתמש הוא הבעלים */}
-                            {task.isOwner !== false && (
+                            {task.isOwner === true && ( // Condition updated to === true
                                 <button onClick={handleDeleteClick} className="delete-btn">מחק</button>
                             )}
                         </div>
@@ -217,7 +241,7 @@ function TaskItem({
 
             <div className="subtasks-section">
                 {/* הוספת תת-משימה רק אם יש הרשאת עריכה */}
-                {(task.isOwner !== false || task.accessType === 'edit') && (
+                {(task.isOwner === true || task.accessType === 'edit') && ( // Condition updated to === true
                     <form onSubmit={handleAddSubtaskSubmit} className="add-subtask-form">
                         <input
                             type="text"
@@ -232,13 +256,18 @@ function TaskItem({
                     </form>
                 )}
 
+                {/* Render Subtasks - Consider passing down accessType or isOwner if SubtaskItem needs permissions */}
                 {task.subtasks && task.subtasks.length > 0 && (
                     <ul className="subtask-list">
                         {task.subtasks.map(subtask => (
                             <SubtaskItem
-                                key={subtask._id || `${task._id}-sub-${Math.random()}`}
+                                key={subtask._id || `${task._id}-sub-${Math.random()}`} // Consider more stable key generation if needed
                                 subtask={subtask}
                                 parentId={task._id}
+                                // Pass permissions down if SubtaskItem needs them
+                                parentTaskAccessType={task.accessType}
+                                parentTaskIsOwner={task.isOwner}
+                                // Pass handlers
                                 onToggleSubtaskComplete={onToggleSubtaskComplete}
                                 onDeleteSubtask={onDeleteSubtask}
                                 onEditSubtask={onEditSubtask}
