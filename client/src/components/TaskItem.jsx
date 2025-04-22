@@ -62,6 +62,13 @@ function TaskItem({
     onSetTaskDueDate,
     onSetTaskPriority
 }) {
+    console.log('Task details:', {
+        id: task._id,
+        text: task.text,
+        isOwner: task.isOwner,
+        user: task.user,
+        accessType: task.accessType
+    });
     // Consistent permission checks
     const isOwner = task.isOwner === true;
     const hasEditPermission = isOwner || task.accessType === 'edit';
