@@ -62,18 +62,19 @@ function TaskItem({
     onSetTaskDueDate,
     onSetTaskPriority
 }) {
+    // קודם הדפס מידע לדיבוג
     console.log('Task details:', {
         id: task._id,
         text: task.text,
         isOwner: task.isOwner,
-        user: task.user,
-        accessType: task.accessType
+        user: task.user
     });
-    // Consistent permission checks
-    const isOwner = task.isOwner === true;
+    
+    // הגדרת משתני הרשאה
+    const isOwner = task.isOwner === true || task.user === JSON.parse(localStorage.getItem('user'))?.id;
     const hasEditPermission = isOwner || task.accessType === 'edit';
     const canViewOnly = !isOwner && task.accessType === 'view';
-
+    
     // State hooks
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(task.text);
