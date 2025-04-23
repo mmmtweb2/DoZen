@@ -334,12 +334,9 @@ function TaskItem({
                         <div className="task-actions">
                             {/* Share button - only for task owners */}
                             {isOwner && (
-                                <ShareButton
-                                    itemType="task"
-                                    itemId={task._id}
-                                    itemName={task.text}
-                                    onShared={() => console.log('Task shared successfully')}
-                                />
+                              <button onClick={() => console.log('Would share task:', task._id)}>
+                                שתף (דיבוג)
+                              </button>
                             )}
 
                             {/* Edit button - show only if user has edit permission */}
