@@ -70,7 +70,7 @@ function TaskItem({
         accessType: task.accessType
     });
     // Consistent permission checks
-    const isOwner = task.isOwner === true;
+    const isOwner = task.isOwner === true || task.user === localStorage.getItem('userId');
     const hasEditPermission = isOwner || task.accessType === 'edit';
     const canViewOnly = !isOwner && task.accessType === 'view';
 
@@ -416,13 +416,11 @@ function TaskItem({
                     <ul className="subtask-list">
                         {task.subtasks.map(subtask => (
                             <SubtaskItem
-                                key={subtask._id || `${task._id}-sub-${Math.random()}`}
+                                key={subtask._id}
                                 subtask={subtask}
                                 parentId={task._id}
-                                // Pass permissions down to SubtaskItem
                                 parentTaskAccessType={task.accessType}
                                 parentTaskIsOwner={isOwner}
-                                // Pass handlers
                                 onToggleSubtaskComplete={onToggleSubtaskComplete}
                                 onDeleteSubtask={onDeleteSubtask}
                                 onEditSubtask={onEditSubtask}
