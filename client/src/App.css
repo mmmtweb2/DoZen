@@ -448,7 +448,8 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  opacity: 0;
+  min-width: 150px; /* וודא שיש מקום מספיק לכל הכפתורים */
+  opacity: 1 !important; /* בדיקה - תמיד הצג */
   transition: opacity 0.2s ease;
 }
 .task-item-wrapper:hover .task-actions {
