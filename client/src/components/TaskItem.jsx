@@ -1,9 +1,42 @@
 // --- client/src/components/TaskItem.jsx ---
-// Fixed version with consistent permission checks and improved UX
+// גרסה מתוקנת עם בדיקות דיבוג לפונקציונליות השיתוף
 
 import React, { useState, useRef, useEffect } from 'react';
 import SubtaskItem from './SubtaskItem';
-import ShareButton from '../components/sharing/ShareButton';
+
+// בדיקת ייבוא של ShareButton
+try {
+  // נסה לייבא את ShareButton
+  // eslint-disable-next-line
+  const ShareButtonTest = require('../components/sharing/ShareButton').default;
+  console.log('בדיקת ייבוא ShareButton: הצליח - הקומפוננטה קיימת');
+} catch (error) {
+  console.error('בדיקת ייבוא ShareButton: נכשל - הקומפוננטה חסרה או נתיב לא נכון', error);
+}
+
+// נסה את הייבוא הרגיל גם
+let ShareButton;
+try {
+  ShareButton = require('../components/sharing/ShareButton').default;
+} catch (error) {
+  console.error('בדיקה 2 - ייבוא ShareButton נכשל:', error);
+  // צור קומפוננטה זמנית אם הייבוא נכשל
+  ShareButton = (props) => (
+    <button 
+      onClick={() => console.log('ShareButton חלופי - נלחץ', props)}
+      style={{
+        background: 'none',
+        border: '1px solid #4F46E5',
+        padding: '0.5rem 0.75rem',
+        borderRadius: '4px',
+        color: '#4F46E5',
+        cursor: 'pointer'
+      }}
+    >
+      שתף (חלופי)
+    </button>
+  );
+}
 
 // Optimized SVG Icons
 const CalendarIcon = () => (
@@ -62,19 +95,48 @@ function TaskItem({
     onSetTaskDueDate,
     onSetTaskPriority
 }) {
-    // קודם הדפס מידע לדיבוג
-    console.log('Task details:', {
+    // בדיקת עומק של המשימה והרשאות
+    console.log('בדיקת נתוני משימה:', {
         id: task._id,
         text: task.text,
         isOwner: task.isOwner,
-        user: task.user
+        user: task.user,
+        accessType: task.accessType
     });
+
+    // בדיקת נתוני המשתמש מהלוקל סטורג'
+    const userFromStorage = localStorage.getItem('user') 
+        ? JSON.parse(localStorage.getItem('user')) 
+        : null;
     
-    // הגדרת משתני הרשאה
-    const isOwner = task.isOwner === true || task.user === JSON.parse(localStorage.getItem('user'))?.id;
+    const tokenFromStorage = localStorage.getItem('authToken');
+    
+    console.log('בדיקת נתוני משתמש מאחסון:', {
+        userFromStorage: userFromStorage ? 'קיים' : 'לא קיים',
+        userId: userFromStorage?._id,
+        tokenExists: tokenFromStorage ? 'קיים' : 'לא קיים'
+    });
+
+    // בדיקות בעלות שונות
+    const ownerCheckStrict = task.isOwner === true;
+    const ownerCheckLoose = Boolean(task.isOwner);
+    const ownerCheckByUser = task.user === userFromStorage?._id;
+    const ownerCheckCombined = ownerCheckStrict || ownerCheckByUser;
+
+    console.log('בדיקות בעלות משימה:', {
+        ownerCheckStrict: ownerCheckStrict ? 'כן' : 'לא',
+        ownerCheckLoose: ownerCheckLoose ? 'כן' : 'לא',
+        ownerCheckByUser: ownerCheckByUser ? 'כן' : 'לא',
+        ownerCheckCombined: ownerCheckCombined ? 'כן' : 'לא'
+    });
+
+    // נשתמש באופציה המשולבת לצורך הדגמה
+    const isOwner = ownerCheckCombined;
+    
+    // עדכון הבדיקות האחרות
     const hasEditPermission = isOwner || task.accessType === 'edit';
     const canViewOnly = !isOwner && task.accessType === 'view';
-    
+
     // State hooks
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(task.text);
@@ -232,6 +294,12 @@ function TaskItem({
 
     const handlePriorityBlur = () => setIsEditingPriority(false);
 
+    // בדיקת האם כפתור השיתוף אמור להיות מוצג
+    console.log('בדיקת תנאי הצגת כפתור שיתוף:', {
+        isOwner,
+        condition: isOwner ? 'כפתור אמור להיות מוצג' : 'כפתור לא אמור להיות מוצג'
+    });
+
     return (
         // Add shared-task class if the user is NOT the owner
         <div className={`task-item-wrapper ${task.subtasks?.length > 0 ? 'has-subtasks' : ''} ${isOwner ? '' : 'shared-task'}`}>
@@ -332,11 +400,50 @@ function TaskItem({
                         </div>
 
                         <div className="task-actions">
+                            {/* כפתור דיבוג קבוע - תמיד מוצג */}
+                            <button 
+                                onClick={() => console.log('כפתור דיבוג נלחץ עבור משימה:', task._id)}
+                                style={{ 
+                                    background: 'orange', 
+                                    color: 'white', 
+                                    border: 'none',
+                                    padding: '0.5rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.9em',
+                                    marginInlineEnd: '0.25rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                דיבוג
+                            </button>
+
+                            {/* כפתור שיתוף תנאי - רק לבעלים */}
+                            {isOwner && (
+                                <button 
+                                    onClick={() => console.log('כפתור שיתוף תנאי נלחץ עבור משימה:', task._id)}
+                                    style={{ 
+                                        background: 'green', 
+                                        color: 'white', 
+                                        border: 'none',
+                                        padding: '0.5rem',
+                                        borderRadius: '4px',
+                                        fontSize: '0.9em',
+                                        marginInlineEnd: '0.25rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    שתף תנאי
+                                </button>
+                            )}
+
                             {/* Share button - only for task owners */}
                             {isOwner && (
-                              <button onClick={() => console.log('Would share task:', task._id)}>
-                                שתף (דיבוג)
-                              </button>
+                                <ShareButton
+                                    itemType="task"
+                                    itemId={task._id}
+                                    itemName={task.text}
+                                    onShared={() => console.log('Task shared successfully')}
+                                />
                             )}
 
                             {/* Edit button - show only if user has edit permission */}
