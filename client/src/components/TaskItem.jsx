@@ -400,50 +400,11 @@ function TaskItem({
                         </div>
 
                         <div className="task-actions">
-                            {/* כפתור דיבוג קבוע - תמיד מוצג */}
-                            <button 
-                                onClick={() => console.log('כפתור דיבוג נלחץ עבור משימה:', task._id)}
-                                style={{ 
-                                    background: 'orange', 
-                                    color: 'white', 
-                                    border: 'none',
-                                    padding: '0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.9em',
-                                    marginInlineEnd: '0.25rem',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                דיבוג
-                            </button>
 
-                            {/* כפתור שיתוף תנאי - רק לבעלים */}
                             {isOwner && (
-                                <button 
-                                    onClick={() => console.log('כפתור שיתוף תנאי נלחץ עבור משימה:', task._id)}
-                                    style={{ 
-                                        background: 'green', 
-                                        color: 'white', 
-                                        border: 'none',
-                                        padding: '0.5rem',
-                                        borderRadius: '4px',
-                                        fontSize: '0.9em',
-                                        marginInlineEnd: '0.25rem',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    שתף תנאי
+                                <button onClick={ShareTask} className="share-button-component" title="שתף משימה">
+                                    שתף
                                 </button>
-                            )}
-
-                            {/* Share button - only for task owners */}
-                            {isOwner && (
-                                <ShareButton
-                                    itemType="task"
-                                    itemId={task._id}
-                                    itemName={task.text}
-                                    onShared={() => console.log('Task shared successfully')}
-                                />
                             )}
 
                             {/* Edit button - show only if user has edit permission */}
