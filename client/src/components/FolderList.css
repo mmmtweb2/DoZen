@@ -49,9 +49,17 @@
 
 .folder-actions {
     display: flex;
-    gap: 4px;
+    gap: 0.5rem;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s ease;
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--color-background);
+    padding: 0.25rem;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .folder-item:hover .folder-actions {
@@ -59,29 +67,48 @@
 }
 
 .folder-actions button {
-    background: none;
+    padding: 0.25rem 0.5rem;
     border: none;
-    padding: 4px 8px;
+    background: none;
+    color: var(--color-text-light);
     cursor: pointer;
-    font-size: 14px;
-    color: var(--color-text);
-    transition: color 0.2s;
+    font-size: 0.9rem;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
 }
 
-.folder-actions .edit-btn {
-    color: var(--color-warning);
+.folder-actions button:hover {
+    color: var(--color-text);
+    background-color: var(--color-background-alt);
 }
 
 .folder-actions .edit-btn:hover {
-    color: var(--color-warning-dark);
-}
-
-.folder-actions .delete-btn {
-    color: var(--color-danger);
+    color: var(--color-warning);
 }
 
 .folder-actions .delete-btn:hover {
-    color: var(--color-danger-dark);
+    color: var(--color-danger);
+}
+
+.folder-actions .share-button-component {
+    padding: 0.25rem;
+    margin: 0;
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+}
+
+.folder-actions .share-button-component:hover {
+    color: var(--color-primary);
+    background: none;
+}
+
+.folder-actions .share-button-component svg {
+    width: 16px;
+    height: 16px;
 }
 
 .add-folder-form {

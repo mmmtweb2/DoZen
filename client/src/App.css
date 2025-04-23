@@ -830,31 +830,80 @@ svg {
 
 /* עיצוב כפתורי פעולה עליונים בסיידבר */
 .sidebar-top-actions {
-  display: flex;
-  justify-content: space-between; /* ממקם את הכפתורים בקצוות */
-  align-items: center;
-  margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius-md);
 }
 
-/* עיצוב כפתור התנתקות */
-.logout-button {
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  cursor: pointer;
-  color: var(--color-secondary); /* צבע אפור */
-  border-radius: var(--border-radius-md);
-  transition: background-color 0.2s ease, color 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.sidebar-top-actions button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--color-text-medium);
+    border-radius: var(--border-radius-md);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.logout-button:hover {
-  background-color: color-mix(in srgb, var(--color-danger) 10%, transparent); /* רקע אדמדם עדין */
-  color: var(--color-danger); /* צבע אדום */
+.sidebar-top-actions button:hover {
+    background-color: var(--color-hover-light);
+    color: var(--color-primary);
 }
 
-.logout-button svg {
-  stroke: currentColor;
+/* עיצוב כפתורי פעולה בתיקיות */
+.folder-actions {
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.folder-item:hover .folder-actions {
+    opacity: 1;
+}
+
+.folder-actions button {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: var(--color-text-light);
+    border-radius: var(--border-radius-sm);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.folder-actions button:hover {
+    background-color: var(--color-hover-light);
+}
+
+.folder-actions .edit-btn:hover {
+    color: var(--color-warning);
+}
+
+.folder-actions .delete-btn:hover {
+    color: var(--color-danger);
+}
+
+/* עיצוב תוכן התיקיה */
+.folder-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.folder-name {
+    flex-grow: 1;
+    margin-right: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

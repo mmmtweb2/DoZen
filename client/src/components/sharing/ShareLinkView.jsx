@@ -1,128 +1,87 @@
 import React, { useState } from 'react';
-import { verifyShareLink, useShareLink } from '../../services/subtaskService';
+import sharingService from '../../services/sharingService';
 import './SharingStyles.css';
 
-const LinkIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-3 3a5 5 0 0 0 .54 7.54"></path>
-        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l3-3a5 5 0 0 0-.54-7.54"></path>
-    </svg>
-);
-
-const ErrorIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-    </svg>
-);
-
 function ShareLinkView() {
-    const [link, setLink] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [shareLink, setShareLink] = useState('');
     const [error, setError] = useState('');
-    const [shareInfo, setShareInfo] = useState(null);
+    const [success, setSuccess] = useState('');
 
-    const handleVerifyLink = async () => {
-        setIsLoading(true);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setError('');
-        setShareInfo(null);
+        setSuccess('');
+
+        if (!shareLink.trim()) {
+            setError('נא להזין קישור שיתוף');
+            return;
+        }
 
         try {
-            // חילוץ הטוקן מהקישור
-            const token = link.split('token=')[1];
-            if (!token) {
-                throw new Error('קישור לא תקין');
+            // חילוץ מזהה הפריט מהקישור
+            const itemId = extractItemIdFromLink(shareLink);
+            if (!itemId) {
+                setError('קישור שיתוף לא תקין');
+                return;
             }
 
-            const info = await verifyShareLink(token);
-            setShareInfo(info);
+            // בדיקת סוג הפריט (תיקיה או משימה)
+            const itemType = shareLink.includes('/folders/') ? 'folder' : 'task';
+
+            // הוספת הפריט למשתמש
+            await sharingService.addSharedItem(itemType, itemId);
+
+            setSuccess('הפריט נוסף בהצלחה');
+            setShareLink('');
         } catch (err) {
-            setError(err.message || 'שגיאה בבדיקת הקישור');
-            console.error('Error verifying share link:', err);
-        } finally {
-            setIsLoading(false);
+            console.error('Error adding shared item:', err);
+            setError(err.message || 'שגיאה בהוספת הפריט המשותף');
         }
     };
 
-    const handleUseLink = async () => {
-        if (!shareInfo) return;
-
-        setIsLoading(true);
-        setError('');
-
+    const extractItemIdFromLink = (link) => {
         try {
-            const token = link.split('token=')[1];
-            await useShareLink(token);
-            setLink('');
-            setShareInfo(null);
-            // כאן אפשר להוסיף הודעת הצלחה או ניתוב לדף המתאים
+            const url = new URL(link);
+            const pathParts = url.pathname.split('/');
+            return pathParts[pathParts.length - 1];
         } catch (err) {
-            setError(err.message || 'שגיאה בשימוש בקישור');
-            console.error('Error using share link:', err);
-        } finally {
-            setIsLoading(false);
+            return null;
         }
     };
 
     return (
-        <div className="share-link-view">
-            <h2>
-                <LinkIcon />
-                הזן קישור שיתוף
-            </h2>
+        <div className="share-link-container">
+            <h2>הזן קישור שיתוף</h2>
 
-            <div className="share-link-form">
+            {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
+
+            <form onSubmit={handleSubmit} className="share-link-form">
                 <div className="form-group">
-                    <label htmlFor="share-link">קישור שיתוף:</label>
                     <input
                         type="text"
-                        id="share-link"
-                        value={link}
-                        onChange={(e) => setLink(e.target.value)}
-                        placeholder="הדבק כאן את קישור השיתוף"
-                        disabled={isLoading}
+                        value={shareLink}
+                        onChange={(e) => setShareLink(e.target.value)}
+                        placeholder="הדבק כאן את קישור השיתוף..."
+                        className="share-link-input"
                     />
                 </div>
-
-                <button
-                    className="verify-link-button"
-                    onClick={handleVerifyLink}
-                    disabled={isLoading || !link}
-                >
-                    {isLoading ? 'בודק...' : 'בדוק קישור'}
+                <button type="submit" className="submit-button">
+                    הוסף פריט משותף
                 </button>
+            </form>
+
+            <div className="share-link-info">
+                <h3>איך זה עובד?</h3>
+                <ol>
+                    <li>העתק את קישור השיתוף שקיבלת</li>
+                    <li>הדבק את הקישור בשדה למעלה</li>
+                    <li>לחץ על "הוסף פריט משותף"</li>
+                </ol>
+                <p className="note">
+                    הערה: קישור שיתוף תקף רק לפריטים ששותפו איתך באופן ישיר.
+                </p>
             </div>
-
-            {error && (
-                <div className="error-message">
-                    <ErrorIcon />
-                    {error}
-                </div>
-            )}
-
-            {shareInfo && (
-                <div className="share-info">
-                    <h3>פרטי השיתוף:</h3>
-                    <p>
-                        <strong>סוג הפריט:</strong>{' '}
-                        {shareInfo.itemType === 'folder' ? 'תיקיה' :
-                            shareInfo.itemType === 'task' ? 'משימה' : 'תת משימה'}
-                    </p>
-                    <p>
-                        <strong>הרשאות:</strong>{' '}
-                        {shareInfo.accessType === 'view' ? 'צפייה בלבד' : 'עריכה מלאה'}
-                    </p>
-
-                    <button
-                        className="use-link-button"
-                        onClick={handleUseLink}
-                        disabled={isLoading}
-                    >
-                        {isLoading ? 'מעבד...' : 'הפעל שיתוף'}
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
