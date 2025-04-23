@@ -121,12 +121,19 @@ const createTask = async (req, res) => {
             dueDate: dueDate || null,
             priority: priority || 'Medium',
             folder: folderId,
-            user: req.user.id, // המשתמש היוצר הוא תמיד הבעלים של המשימה
+            user: req.user.id,
             subtasks: [],
-            sharedWith: [] // אתחול מערך השיתוף כריק
+            sharedWith: []
         });
 
-        res.status(201).json(task);
+        // הוספת מידע על בעלות לתשובה
+        const taskWithPermissions = {
+            ...task.toObject(),
+            isOwner: true,
+            accessType: 'edit'
+        };
+
+        res.status(201).json(taskWithPermissions);
     } catch (error) {
         console.error('Error creating task:', error);
         res.status(500).json({ message: 'Server Error' });
@@ -181,7 +188,14 @@ const updateTask = async (req, res) => {
             runValidators: true
         });
 
-        res.status(200).json(updatedTask);
+        // הוספת מידע על בעלות לתשובה
+        const taskWithPermissions = {
+            ...updatedTask.toObject(),
+            isOwner: updatedTask.user.toString() === req.user.id,
+            accessType: hasEditPermission ? 'edit' : 'view'
+        };
+
+        res.status(200).json(taskWithPermissions);
     } catch (error) {
         console.error('Error updating task:', error);
         res.status(500).json({ message: 'Server Error' });

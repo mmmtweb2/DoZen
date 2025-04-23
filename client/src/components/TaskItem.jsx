@@ -231,6 +231,35 @@ function TaskItem({
 
     const handlePriorityBlur = () => setIsEditingPriority(false);
 
+    const handleEdit = () => {
+        if (task.accessType === 'edit') {
+            setIsEditing(true);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (task.isOwner) {
+            if (window.confirm('האם אתה בטוח שברצונך למחוק משימה זו?')) {
+                try {
+                    await onDeleteTask(task._id);
+                } catch (error) {
+                    console.error('שגיאה במחיקת המשימה:', error);
+                }
+            }
+        }
+    };
+
+    const handleSave = async () => {
+        if (task.accessType === 'edit') {
+            try {
+                await onEditTask(task._id, editText);
+                setIsEditing(false);
+            } catch (error) {
+                console.error('שגיאה בעדכון המשימה:', error);
+            }
+        }
+    };
+
     return (
         // Add shared-task class if the user is NOT the owner
         <div className={`task-item-wrapper ${task.subtasks?.length > 0 ? 'has-subtasks' : ''} ${isOwner ? '' : 'shared-task'}`}>

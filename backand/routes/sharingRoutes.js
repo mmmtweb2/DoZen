@@ -14,7 +14,10 @@ const {
     removeUserFromTask,
     getTaskSharedUsers,
     getFoldersSharedWithMe,
-    getTasksSharedWithMe
+    getTasksSharedWithMe,
+    generateShareLink,
+    verifyShareLink,
+    useShareLink
 } = require('../controllers/sharingController');
 
 // --- נתיבים לשיתוף תיקיות ---
@@ -44,5 +47,16 @@ router.get('/tasks/:taskId/users', protect, getTaskSharedUsers);
 
 // קבלת רשימת משימות שמשותפות עם המשתמש המחובר
 router.get('/tasks/shared-with-me', protect, getTasksSharedWithMe);
+
+// --- נתיבים לשיתוף באמצעות קישורים ---
+
+// יצירת קישור שיתוף
+router.post('/:itemType/:itemId/generate-link', protect, generateShareLink);
+
+// אימות קישור שיתוף
+router.get('/verify-link/:token', verifyShareLink);
+
+// שימוש בקישור שיתוף
+router.post('/use-link/:token', protect, useShareLink);
 
 module.exports = router;

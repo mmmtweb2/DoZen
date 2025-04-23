@@ -69,6 +69,8 @@ function SharingDialog({ itemType, itemId, itemName, isOpen, onClose, onShared }
                 users = await sharingService.getFolderSharedUsers(itemId);
             } else if (itemType === 'task') {
                 users = await sharingService.getTaskSharedUsers(itemId);
+            } else if (itemType === 'subtask') {
+                users = await sharingService.getSubtaskSharedUsers(itemId);
             }
 
             if (users && users.sharedWith) {
@@ -99,6 +101,8 @@ function SharingDialog({ itemType, itemId, itemName, isOpen, onClose, onShared }
                 await sharingService.shareFolder(itemId, email, accessType);
             } else if (itemType === 'task') {
                 await sharingService.shareTask(itemId, email, accessType);
+            } else if (itemType === 'subtask') {
+                await sharingService.shareSubtask(itemId, email, accessType);
             }
 
             // טעינה מחדש של רשימת השיתופים
@@ -132,6 +136,8 @@ function SharingDialog({ itemType, itemId, itemName, isOpen, onClose, onShared }
                 await sharingService.removeUserFromFolder(itemId, userId);
             } else if (itemType === 'task') {
                 await sharingService.removeUserFromTask(itemId, userId);
+            } else if (itemType === 'subtask') {
+                await sharingService.removeUserFromSubtask(itemId, userId);
             }
 
             // טעינה מחדש של רשימת השיתופים
@@ -158,7 +164,7 @@ function SharingDialog({ itemType, itemId, itemName, isOpen, onClose, onShared }
                 <div className="sharing-dialog-header">
                     <h3>
                         <ShareIcon />
-                        שיתוף {itemType === 'folder' ? 'תיקיה' : 'משימה'}: {itemName}
+                        שיתוף {itemType === 'folder' ? 'תיקיה' : itemType === 'task' ? 'משימה' : 'תת משימה'}: {itemName}
                     </h3>
                     <button className="close-button" onClick={onClose} aria-label="סגור">
                         <CloseIcon />

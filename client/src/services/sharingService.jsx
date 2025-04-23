@@ -4,7 +4,7 @@
  * מספק פונקציות לשיתוף, הסרת שיתוף וקבלת מידע על פריטים משותפים
  */
 
-const API_BASE_URL = 'https://dozen.onrender.com/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 const getToken = () => {
     return localStorage.getItem('authToken');
@@ -139,6 +139,41 @@ const getSharedTasks = async () => {
     return await fetchAuthenticated(`${API_BASE_URL}/sharing/tasks/shared-with-me`);
 };
 
+/**
+ * שיתוף תת-משימה עם משתמש אחר לפי אימייל
+ * @param {string} subtaskId - מזהה תת-המשימה
+ * @param {string} email - אימייל המשתמש לשיתוף
+ * @param {string} accessType - סוג ההרשאה (view או edit)
+ * @returns {Promise<Object>}
+ */
+const shareSubtask = async (subtaskId, email, accessType = 'view') => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/subtasks/${subtaskId}`, {
+        method: 'POST',
+        body: JSON.stringify({ email, accessType }),
+    });
+};
+
+/**
+ * הסרת משתמש משיתוף תת-משימה
+ * @param {string} subtaskId - מזהה תת-המשימה
+ * @param {string} userId - מזהה המשתמש להסרה
+ * @returns {Promise<Object>}
+ */
+const removeUserFromSubtask = async (subtaskId, userId) => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/subtasks/${subtaskId}/users/${userId}`, {
+        method: 'DELETE',
+    });
+};
+
+/**
+ * קבלת רשימת המשתמשים שתת-משימה משותפת איתם
+ * @param {string} subtaskId - מזהה תת-המשימה
+ * @returns {Promise<Object>}
+ */
+const getSubtaskSharedUsers = async (subtaskId) => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/subtasks/${subtaskId}/users`);
+};
+
 // ייצוא השירות
 const sharingService = {
     shareFolder,
@@ -148,7 +183,10 @@ const sharingService = {
     shareTask,
     removeUserFromTask,
     getTaskSharedUsers,
-    getSharedTasks
+    getSharedTasks,
+    shareSubtask,
+    removeUserFromSubtask,
+    getSubtaskSharedUsers
 };
 
 export default sharingService;

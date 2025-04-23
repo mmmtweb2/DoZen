@@ -2,7 +2,7 @@
 // --- server/routes/folderRoutes.js ---
 const express = require('express');
 const router = express.Router();
-const { getFolders, createFolder, deleteFolder } = require('../controllers/folderController');
+const { getFolders, createFolder, deleteFolder, updateFolder } = require('../controllers/folderController');
 const { protect } = require('../middleware/authMiddleware');
 
 // הגדרת נתיבים עבור '/api/folders'
@@ -13,6 +13,7 @@ router.route('/')
 
 // הוספת נתיב למחיקת תיקיה
 router.route('/:id')
-    .delete(protect, deleteFolder); // DELETE /api/folders/:id - מחיקת תיקיה
+    .delete(protect, deleteFolder)
+    .put(protect, updateFolder);
 
 module.exports = router;

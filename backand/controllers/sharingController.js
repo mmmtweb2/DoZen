@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Folder = require('../models/Folder');
 const Task = require('../models/Task');
 const mongoose = require('mongoose');
+const ShareLink = require('../models/ShareLink');
 
 // --- פונקציות עזר ---
 
@@ -390,6 +391,157 @@ const getTasksSharedWithMe = async (req, res) => {
     }
 };
 
+// --- בקרים לשיתוף באמצעות קישורים ---
+
+/**
+ * יצירת קישור שיתוף לפריט
+ * @route POST /api/sharing/:itemType/:itemId/generate-link
+ * @access Private
+ */
+const generateShareLink = async (req, res) => {
+    const { itemType, itemId } = req.params;
+    const { accessType = 'view' } = req.body;
+    const userId = req.user._id;
+
+    try {
+        let item;
+        if (itemType === 'folder') {
+            item = await Folder.findById(itemId);
+        } else if (itemType === 'task') {
+            item = await Task.findById(itemId);
+        } else {
+            return res.status(400).json({ message: 'Invalid item type' });
+        }
+
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        if (!verifyOwnership(item, userId)) {
+            return res.status(403).json({ message: 'Not authorized to share this item' });
+        }
+
+        // יצירת טוקן ייחודי
+        const token = new mongoose.Types.ObjectId().toString();
+
+        // שמירת פרטי השיתוף
+        const shareInfo = {
+            token,
+            itemType,
+            itemId,
+            accessType,
+            createdBy: userId,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ימים
+            used: false
+        };
+
+        // שמירה במסד הנתונים
+        await ShareLink.create(shareInfo);
+
+        // יצירת הקישור המלא
+        const shareLink = `${process.env.FRONTEND_URL}/share/${token}`;
+
+        res.status(200).json({
+            success: true,
+            shareLink,
+            expiresAt: shareInfo.expiresAt
+        });
+    } catch (error) {
+        console.error('Error generating share link:', error);
+        res.status(500).json({ message: 'Error generating share link' });
+    }
+};
+
+/**
+ * אימות קישור שיתוף
+ * @route GET /api/sharing/verify-link/:token
+ * @access Public
+ */
+const verifyShareLink = async (req, res) => {
+    const { token } = req.params;
+
+    try {
+        const shareInfo = await ShareLink.findOne({ token });
+
+        if (!shareInfo) {
+            return res.status(404).json({ message: 'Share link not found' });
+        }
+
+        if (shareInfo.used) {
+            return res.status(400).json({ message: 'Share link has already been used' });
+        }
+
+        if (new Date() > shareInfo.expiresAt) {
+            return res.status(400).json({ message: 'Share link has expired' });
+        }
+
+        res.status(200).json({
+            success: true,
+            itemType: shareInfo.itemType,
+            accessType: shareInfo.accessType
+        });
+    } catch (error) {
+        console.error('Error verifying share link:', error);
+        res.status(500).json({ message: 'Error verifying share link' });
+    }
+};
+
+/**
+ * שימוש בקישור שיתוף
+ * @route POST /api/sharing/use-link/:token
+ * @access Private
+ */
+const useShareLink = async (req, res) => {
+    const { token } = req.params;
+    const userId = req.user._id;
+
+    try {
+        const shareInfo = await ShareLink.findOne({ token });
+
+        if (!shareInfo) {
+            return res.status(404).json({ message: 'Share link not found' });
+        }
+
+        if (shareInfo.used) {
+            return res.status(400).json({ message: 'Share link has already been used' });
+        }
+
+        if (new Date() > shareInfo.expiresAt) {
+            return res.status(400).json({ message: 'Share link has expired' });
+        }
+
+        // סימון הקישור כמשומש
+        shareInfo.used = true;
+        shareInfo.usedBy = userId;
+        shareInfo.usedAt = new Date();
+        await shareInfo.save();
+
+        // הוספת המשתמש לרשימת המשתמשים המשותפים
+        if (shareInfo.itemType === 'folder') {
+            const folder = await Folder.findById(shareInfo.itemId);
+            if (!folder.sharedWith.includes(userId)) {
+                folder.sharedWith.push(userId);
+                await folder.save();
+            }
+        } else if (shareInfo.itemType === 'task') {
+            const task = await Task.findById(shareInfo.itemId);
+            if (!task.sharedWith.includes(userId)) {
+                task.sharedWith.push(userId);
+                await task.save();
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Share link used successfully'
+        });
+    } catch (error) {
+        console.error('Error using share link:', error);
+        res.status(500).json({ message: 'Error using share link' });
+    }
+};
+
 module.exports = {
     shareFolder,
     removeUserFromFolder,
@@ -398,5 +550,8 @@ module.exports = {
     removeUserFromTask,
     getTaskSharedUsers,
     getFoldersSharedWithMe,
-    getTasksSharedWithMe
+    getTasksSharedWithMe,
+    generateShareLink,
+    verifyShareLink,
+    useShareLink
 };

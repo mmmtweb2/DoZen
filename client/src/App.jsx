@@ -10,6 +10,7 @@ import LoginPage from './pages/loginPage';
 import RegisterPage from './pages/registerPage';
 import apiService from './services/apiService';
 import SharedItemsView from './components/sharing/SharedItemsView';
+import ShareLinkView from './components/sharing/ShareLinkView';
 
 
 function App() {
@@ -72,6 +73,36 @@ function App() {
     } catch (error) {
       console.error("Failed to create folder:", error);
       alert(`שגיאה ביצירת תיקיה: ${error.message}`);
+    }
+  };
+
+  const editFolder = async (folderId, newName) => {
+    if (!newName.trim()) return;
+
+    try {
+      const updatedFolder = await apiService.updateFolder(folderId, { name: newName.trim() });
+      setFolders(prevFolders => prevFolders.map(folder =>
+        folder._id === folderId ? updatedFolder : folder
+      ));
+    } catch (error) {
+      console.error("Failed to update folder:", error);
+      alert(`שגיאה בעדכון תיקיה: ${error.message}`);
+    }
+  };
+
+  const deleteFolder = async (folderId) => {
+    try {
+      await apiService.deleteFolder(folderId);
+      setFolders(prevFolders => prevFolders.filter(folder => folder._id !== folderId));
+
+      // אם התיקיה שנמחקה הייתה נבחרת, נבחר את הדשבורד
+      if (selectedFolderId === folderId) {
+        setSelectedFolderId(null);
+        setCurrentView('dashboard');
+      }
+    } catch (error) {
+      console.error("Failed to delete folder:", error);
+      alert(`שגיאה במחיקת תיקיה: ${error.message}`);
     }
   };
 
@@ -326,53 +357,38 @@ function App() {
     setShowSharedItems(false);
   };
 
+  const showShareLinkView = () => {
+    setCurrentView('share-link');
+  };
 
   return (
-    <>
-      {user ? (
-        <div className="app-layout">
+    <div className="app">
+      {!user ? (
+        authView === 'login' ? (
+          <LoginPage onSwitchToRegister={() => setAuthView('register')} />
+        ) : (
+          <RegisterPage onSwitchToLogin={() => setAuthView('login')} />
+        )
+      ) : (
+        <div className="app-container">
           <FolderList
             folders={folders}
             selectedFolderId={selectedFolderId}
             onSelectFolder={selectFolder}
             onAddFolder={addFolder}
+            onEditFolder={editFolder}
+            onDeleteFolder={deleteFolder}
             onShowDashboard={showDashboard}
             onShowSharedItems={showSharedItemsView}
-            onLogout={logout}
+            onShowShareLink={showShareLinkView}
           />
           <div className="main-content">
-            {currentView === 'shared' && (
-              <SharedItemsView onSelectFolder={selectSharedFolder} />
-            )}
-            {currentView === 'dashboard' ? (
-              <Dashboard />
-            ) : currentView === 'folder' && selectedFolderId ? (
+            {currentView === 'dashboard' && <Dashboard />}
+            {currentView === 'folder' && (
               <>
-                <h1>{selectedFolderName || 'טוען תיקיה...'}</h1>
                 <AddTaskForm onAddTask={addTask} />
-                <div className="sort-controls">
-                  <span>מיין לפי:</span>
-                  <button
-                    onClick={() => handleSortChange('default')}
-                    className={sortBy === 'default' ? 'active' : ''}
-                  >
-                    ברירת מחדל
-                  </button>
-                  <button
-                    onClick={() => handleSortChange('dueDate')}
-                    className={sortBy === 'dueDate' ? 'active' : ''}
-                  >
-                    תאריך יעד {sortBy === 'dueDate' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </button>
-                  <button
-                    onClick={() => handleSortChange('priority')}
-                    className={sortBy === 'priority' ? 'active' : ''}
-                  >
-                    עדיפות {sortBy === 'priority' && (sortOrder === 'desc' ? '↓' : '↑')}
-                  </button>
-                </div>
                 <TaskList
-                  tasks={sortedTasks}
+                  tasks={getSortedTasks(tasks)}
                   onToggleComplete={toggleComplete}
                   onDeleteTask={deleteTask}
                   onEditTask={editTask}
@@ -384,20 +400,13 @@ function App() {
                   onSetTaskPriority={setTaskPriority}
                 />
               </>
-            ) : (
-              <p>אנא בחר תיקיה או עבור לדשבורד.</p>
             )}
+            {currentView === 'shared' && <SharedItemsView onSelectFolder={selectSharedFolder} />}
+            {currentView === 'share-link' && <ShareLinkView />}
           </div>
         </div>
-      ) : (
-        authView === 'login' ? (
-          <LoginPage onSwitchToRegister={() => setAuthView('register')} />
-        ) : (
-          <RegisterPage onSwitchToLogin={() => setAuthView('login')} />
-        )
       )}
-    </>
-
+    </div>
   );
 }
 

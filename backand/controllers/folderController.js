@@ -91,8 +91,40 @@ const deleteFolder = async (req, res) => {
     }
 };
 
+// @desc    עדכון תיקיה קיימת
+// @route   PUT /api/folders/:id
+// @access  Private
+const updateFolder = async (req, res) => {
+    try {
+        // מציאת התיקיה
+        const folder = await Folder.findById(req.params.id);
+
+        if (!folder) {
+            return res.status(404).json({ message: 'תיקיה לא נמצאה' });
+        }
+
+        // בדיקה שהמשתמש הוא הבעלים של התיקיה
+        if (folder.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'אין לך הרשאה לעדכן תיקיה זו - עליך להיות הבעלים' });
+        }
+
+        // עדכון התיקיה
+        const updatedFolder = await Folder.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+
+        res.status(200).json(updatedFolder);
+    } catch (error) {
+        console.error('Error updating folder:', error);
+        res.status(500).json({ message: 'שגיאת שרת' });
+    }
+};
+
 module.exports = {
     getFolders,
     createFolder,
-    deleteFolder
+    deleteFolder,
+    updateFolder
 };

@@ -4,5 +4,14 @@ import react from '@vitejs/plugin-react' // או הפלאגין המתאים ל�
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()], // או הפלאגין המתאים לפרויקט שלך
-  base: '/DoZen/' // <-- הוסף או עדכן את השורה הזו
+  base: '/DoZen/', // <-- הוסף או עדכן את השורה הזו
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://dozen-backend.onrender.com',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
+  }
 })

@@ -1,6 +1,6 @@
 // --- src/services/apiService.js ---
 
-const API_BASE_URL = 'https://dozen.onrender.com/api';
+const API_BASE_URL = 'https://dozen-backend.onrender.com/api';
 
 const getToken = () => {
     return localStorage.getItem('authToken');
@@ -53,6 +53,13 @@ const getFolders = async () => {
 const createFolder = async (folderData) => {
     return await fetchAuthenticated(`${API_BASE_URL}/folders`, {
         method: 'POST',
+        body: JSON.stringify(folderData),
+    });
+};
+
+const updateFolder = async (folderId, folderData) => {
+    return await fetchAuthenticated(`${API_BASE_URL}/folders/${folderId}`, {
+        method: 'PUT',
         body: JSON.stringify(folderData),
     });
 };
@@ -115,6 +122,7 @@ const deleteSubtask = async (taskId, subtaskId) => {
 const apiService = {
     getFolders,
     createFolder,
+    updateFolder,
     deleteFolder,
     getTasks,
     createTask,

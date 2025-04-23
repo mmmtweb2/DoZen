@@ -1,0 +1,223 @@
+.folder-list-container {
+    width: 250px;
+    background-color: var(--color-background);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.folder-list-container h2 {
+    padding: 1rem;
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.folder-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.folder-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.folder-item:hover {
+    background-color: var(--color-hover);
+}
+
+.folder-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.folder-name svg {
+    flex-shrink: 0;
+}
+
+.folder-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.folder-item:hover .folder-actions {
+    opacity: 1;
+}
+
+.folder-actions button {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text);
+    transition: color 0.2s;
+}
+
+.folder-actions .edit-btn {
+    color: var(--color-warning);
+}
+
+.folder-actions .edit-btn:hover {
+    color: var(--color-warning-dark);
+}
+
+.folder-actions .delete-btn {
+    color: var(--color-danger);
+}
+
+.folder-actions .delete-btn:hover {
+    color: var(--color-danger-dark);
+}
+
+.add-folder-form {
+    display: flex;
+    padding: 1rem;
+    gap: 8px;
+    border-top: 1px solid var(--color-border);
+}
+
+.add-folder-form input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-background);
+    color: var(--color-text);
+}
+
+.add-folder-form button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--color-primary);
+    transition: color 0.2s;
+}
+
+.add-folder-form button:hover {
+    color: var(--color-primary-dark);
+}
+
+.edit-mode {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.edit-mode input {
+    flex-grow: 1;
+    padding: 4px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background-color: var(--color-background);
+    color: var(--color-text);
+}
+
+.edit-mode button {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.edit-mode .save-btn {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.edit-mode .save-btn:hover {
+    background-color: var(--color-success-dark);
+}
+
+.edit-mode .cancel-btn {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.edit-mode .cancel-btn:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.confirm-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-dialog {
+    background-color: var(--color-background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.confirm-dialog h3 {
+    margin: 0 0 1rem 0;
+    color: var(--color-text);
+}
+
+.confirm-dialog p {
+    margin: 0 0 1rem 0;
+    color: var(--color-text);
+}
+
+.confirm-dialog .warning-text {
+    color: var(--color-danger);
+    font-weight: bold;
+}
+
+.confirm-dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.confirm-dialog-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.confirm-dialog-buttons .cancel-button {
+    background-color: var(--color-secondary);
+    color: white;
+}
+
+.confirm-dialog-buttons .cancel-button:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.confirm-dialog-buttons .confirm-button {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.confirm-dialog-buttons .confirm-button:hover {
+    background-color: var(--color-danger-dark);
+} 

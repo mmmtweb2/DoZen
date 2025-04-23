@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ShareButton from '../components/sharing/ShareButton';
 
 function SubtaskItem({ subtask, parentId, onToggleSubtaskComplete, onDeleteSubtask, onEditSubtask }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -63,9 +64,15 @@ function SubtaskItem({ subtask, parentId, onToggleSubtaskComplete, onDeleteSubta
             ) : (
                 <>
                     <span className="subtask-text">{subtask.text}</span>
-                    <div className="task-actions">
-                        <button onClick={handleEditClick} className="edit-btn">ערוך</button>
-                        <button onClick={handleDeleteClick} className="delete-btn">מחק</button>
+                    <div className="subtask-actions">
+                        <button onClick={handleEditClick} className="edit-btn" title="ערוך תת משימה">ערוך</button>
+                        <button onClick={handleDeleteClick} className="delete-btn" title="מחק תת משימה">מחק</button>
+                        <ShareButton
+                            itemType="subtask"
+                            itemId={subtask._id}
+                            itemName={subtask.text}
+                            onShared={() => console.log('Subtask shared successfully')}
+                        />
                     </div>
                 </>
             )}

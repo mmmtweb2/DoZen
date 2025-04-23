@@ -640,3 +640,199 @@
     border-radius: 50%;
     background-color: var(--color-accent);
 }
+
+/* סגנונות עבור ShareLinkDialog */
+.share-link-form {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: var(--color-background-light);
+    border-radius: 8px;
+}
+
+.generate-link-button {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.generate-link-button:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.generate-link-button:disabled {
+    background-color: var(--color-disabled);
+    cursor: not-allowed;
+}
+
+.share-link-result {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--color-background-light);
+    border-radius: 8px;
+}
+
+.link-display {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.link-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: white;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.copy-link-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background-color: var(--color-secondary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.copy-link-button:hover {
+    background-color: var(--color-secondary-dark);
+}
+
+.link-info {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+/* סגנונות עבור ShareLinkView */
+.share-link-view {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.share-link-view h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-text-primary);
+}
+
+.share-link-view .form-group {
+    margin-bottom: 1rem;
+}
+
+.share-link-view input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.share-link-view input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.verify-link-button {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.verify-link-button:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.verify-link-button:disabled {
+    background-color: var(--color-disabled);
+    cursor: not-allowed;
+}
+
+.share-info {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--color-background-light);
+    border-radius: 8px;
+}
+
+.share-info h3 {
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+}
+
+.share-info p {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-secondary);
+}
+
+.use-link-button {
+    margin-top: 1rem;
+    background-color: var(--color-success);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    width: 100%;
+}
+
+.use-link-button:hover {
+    background-color: var(--color-success-dark);
+}
+
+.use-link-button:disabled {
+    background-color: var(--color-disabled);
+    cursor: not-allowed;
+}
+
+.share-link-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.share-link-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.share-link-button svg {
+    width: 20px;
+    height: 20px;
+}

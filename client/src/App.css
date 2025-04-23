@@ -1,4 +1,3 @@
-
 /* --- הגדרות בסיס ומשתני צבע משופרים --- */
 :root {
   --font-main: 'Inter', sans-serif;
@@ -857,4 +856,42 @@ svg {
 
 .logout-button svg {
   stroke: currentColor;
+}
+
+/* סגנונות לכפתורי תתי משימות */
+.subtask-actions {
+    display: flex;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.subtask-actions button {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text);
+    transition: color 0.2s;
+}
+
+.subtask-actions .edit-btn {
+    color: var(--color-warning);
+}
+
+.subtask-actions .edit-btn:hover {
+    color: var(--color-warning-dark);
+}
+
+.subtask-actions .delete-btn {
+    color: var(--color-danger);
+}
+
+.subtask-actions .delete-btn:hover {
+    color: var(--color-danger-dark);
+}
+
+.subtask-actions .share-button-component {
+    padding: 4px 8px;
+    font-size: 14px;
 }

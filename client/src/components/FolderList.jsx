@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ShareButton from './sharing/ShareButton';
+import './FolderList.css';
 
 const PlusIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -16,8 +18,11 @@ const ShareAltIcon = () => (
     </svg>
 );
 
-function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, onShowDashboard, onShowSharedItems, onLogout }) {
+function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, onDeleteFolder, onEditFolder, onShowDashboard, onShowSharedItems, onShowShareLink, onLogout }) {
     const [newFolderName, setNewFolderName] = useState('');
+    const [editingFolderId, setEditingFolderId] = useState(null);
+    const [editFolderName, setEditFolderName] = useState('');
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
     const handleAddFolderSubmit = (event) => {
         event.preventDefault();
@@ -25,6 +30,37 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
         if (!trimmedName) return;
         onAddFolder(trimmedName);
         setNewFolderName('');
+    };
+
+    const handleEditClick = (folder) => {
+        setEditingFolderId(folder._id);
+        setEditFolderName(folder.name);
+    };
+
+    const handleSaveEdit = async (folderId) => {
+        if (editFolderName.trim()) {
+            await onEditFolder(folderId, editFolderName.trim());
+            setEditingFolderId(null);
+            setEditFolderName('');
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingFolderId(null);
+        setEditFolderName('');
+    };
+
+    const handleDeleteClick = (folderId) => {
+        setShowDeleteConfirm(folderId);
+    };
+
+    const confirmDelete = async (folderId) => {
+        await onDeleteFolder(folderId);
+        setShowDeleteConfirm(null);
+    };
+
+    const cancelDelete = () => {
+        setShowDeleteConfirm(null);
     };
 
     return (
@@ -35,6 +71,12 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
                 </button>
                 <button onClick={onShowSharedItems} className="shared-items-button" title="פריטים משותפים">
                     <ShareAltIcon />
+                </button>
+                <button onClick={onShowShareLink} className="share-link-button" title="הזן קישור שיתוף">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-3 3a5 5 0 0 0 .54 7.54"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l3-3a5 5 0 0 0-.54-7.54"></path>
+                    </svg>
                 </button>
                 <button onClick={onLogout} className="logout-button" title="התנתק">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
@@ -55,8 +97,45 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
                         className={`folder-item ${folder._id === selectedFolderId ? 'selected' : ''} ${folder.isOwner === false ? 'shared-folder' : ''}`}
                         onClick={() => onSelectFolder(folder._id)}
                     >
-                        {folder.name}
-                        {!folder.isOwner && <span className="shared-indicator" title="תיקיה משותפת">↩</span>}
+                        {editingFolderId === folder._id ? (
+                            <div className="edit-mode">
+                                <input
+                                    type="text"
+                                    value={editFolderName}
+                                    onChange={(e) => setEditFolderName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleSaveEdit(folder._id);
+                                        else if (e.key === 'Escape') handleCancelEdit();
+                                    }}
+                                    className="edit-input"
+                                    autoFocus
+                                />
+                                <button onClick={() => handleSaveEdit(folder._id)} className="save-btn">שמור</button>
+                                <button onClick={handleCancelEdit} className="cancel-btn">ביטול</button>
+                            </div>
+                        ) : (
+                            <>
+                                <div
+                                    className="folder-name"
+                                    onClick={() => onSelectFolder(folder._id)}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    <span>{folder.name}</span>
+                                </div>
+                                <div className="folder-actions">
+                                    <button onClick={() => handleEditClick(folder)} className="edit-btn" title="ערוך תיקיה">ערוך</button>
+                                    <button onClick={() => handleDeleteClick(folder._id)} className="delete-btn" title="מחק תיקיה">מחק</button>
+                                    <ShareButton
+                                        itemType="folder"
+                                        itemId={folder._id}
+                                        itemName={folder.name}
+                                        onShared={() => console.log('Folder shared successfully')}
+                                    />
+                                </div>
+                            </>
+                        )}
                     </li>
                 ))}
             </ul>
@@ -71,6 +150,20 @@ function FolderList({ folders, selectedFolderId, onSelectFolder, onAddFolder, on
                     <PlusIcon />
                 </button>
             </form>
+
+            {showDeleteConfirm && (
+                <div className="confirm-dialog-overlay">
+                    <div className="confirm-dialog">
+                        <h3>מחיקת תיקיה</h3>
+                        <p>האם אתה בטוח שברצונך למחוק את התיקיה "{folders.find(f => f._id === showDeleteConfirm)?.name}"?</p>
+                        <p className="warning-text">שים לב: מחיקת תיקיה תמחק גם את כל המשימות והתתי-משימות שבה!</p>
+                        <div className="confirm-dialog-buttons">
+                            <button className="cancel-button" onClick={cancelDelete}>ביטול</button>
+                            <button className="confirm-button confirm-delete" onClick={() => confirmDelete(showDeleteConfirm)}>מחק</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
