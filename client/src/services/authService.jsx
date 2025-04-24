@@ -1,6 +1,6 @@
 // --- src/services/authService.js ---
 
-const API_URL = 'http://localhost:5000/api/auth/';
+const API_URL = 'https://dozen-backend.onrender.com/api';
 
 /**
  * רישום משתמש חדש
