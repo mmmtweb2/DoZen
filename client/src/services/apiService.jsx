@@ -19,7 +19,12 @@ const fetchAuthenticated = async (url, options = {}) => {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(url, { ...options, headers });
+        const response = await fetch(url, {
+            ...options,
+            headers,
+            credentials: 'include',
+            mode: 'cors'
+        });
 
         // טיפול בתשובות ללא גוף
         if (response.status === 204 || response.headers.get('content-length') === '0') {
@@ -117,6 +122,23 @@ const deleteSubtask = async (taskId, subtaskId) => {
     });
 };
 
+// --- פונקציות API לשיתוף ---
+const generateShareLink = async (itemType, itemId, accessType = 'view') => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/${itemType}/${itemId}/generate-link`, {
+        method: 'POST',
+        body: JSON.stringify({ accessType }),
+    });
+};
+
+const verifyShareLink = async (token) => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/verify-link/${token}`);
+};
+
+const useShareLink = async (token) => {
+    return await fetchAuthenticated(`${API_BASE_URL}/sharing/use-link/${token}`, {
+        method: 'POST',
+    });
+};
 
 // ייצוא השירות
 const apiService = {
@@ -130,7 +152,10 @@ const apiService = {
     deleteTask,
     addSubtask,
     updateSubtask,
-    deleteSubtask
+    deleteSubtask,
+    generateShareLink,
+    verifyShareLink,
+    useShareLink
 };
 
 export default apiService;

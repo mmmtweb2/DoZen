@@ -14,11 +14,17 @@ const { protect } = require('./middleware/authMiddleware');
 
 // הגדרות CORS מפורטות - מתוקן עבור Render ו-GitHub Pages
 const corsOptions = {
-    origin: ['https://mmmtweb2.github.io', 'http://localhost:5173', 'https://dozen-backend.onrender.com'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: ['https://mmmtweb2.github.io', 'http://localhost:5173', 'https://dozen-backend.onrender.com', 'http://localhost:5000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200 // מומלץ להוסיף
+    credentials: true,
+    optionsSuccessStatus: 200
 };
+
+// קביעת כתובת הפרונט-אנד בהתאם לסביבה
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+    ? 'https://mmmtweb2.github.io'
+    : 'http://localhost:5173';
 
 // --- פונקציית חיבור אסינכרונית ל-MongoDB ---
 const connectDB = async () => {
@@ -163,8 +169,7 @@ app.get('/api/sharing/subtasks/:subtaskId/users', protect, async (req, res) => {
 });
 
 // יצירת קישור שיתוף
-const generateShareLink = (itemId, itemType) => {
-    const token = generateUniqueToken(); // טוקן ייחודי
+const generateShareLink = (itemId, itemType, token) => {
     return `${FRONTEND_URL}/share/${itemType}/${itemId}?token=${token}`;
 };
 
