@@ -1,6 +1,8 @@
 // --- src/services/apiService.js ---
 
-const API_BASE_URL = 'https://dozen-backend.onrender.com/api';
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? 'https://dozen-backend.onrender.com/api'
+    : 'http://localhost:5000/api';
 
 const getToken = () => {
     return localStorage.getItem('authToken');
@@ -12,6 +14,7 @@ const fetchAuthenticated = async (url, options = {}) => {
         const token = getToken();
         const headers = {
             'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
             ...options.headers,
         };
 
@@ -22,13 +25,13 @@ const fetchAuthenticated = async (url, options = {}) => {
         const response = await fetch(url, {
             ...options,
             headers,
-            credentials: 'include',
-            mode: 'cors'
+            mode: 'cors',
+            credentials: 'include'
         });
 
         // טיפול בתשובות ללא גוף
         if (response.status === 204 || response.headers.get('content-length') === '0') {
-            if (response.ok) return null; // אין תוכן, אבל הבקשה הצליחה
+            if (response.ok) return null;
             throw new Error(`API Error: ${response.statusText} (Status: ${response.status})`);
         }
 
@@ -37,13 +40,11 @@ const fetchAuthenticated = async (url, options = {}) => {
         if (response.ok) {
             return data;
         } else {
-            // שימוש בהודעת שגיאה מהשרת אם קיימת
             throw new Error(data?.message || `API Error: ${response.statusText} (Status: ${response.status})`);
         }
     } catch (error) {
-        // שגיאות רשת כלליות
+        console.error('Network Error:', error);
         if (!error.message.includes('API Error')) {
-            console.error("Network Error:", error);
             throw new Error("Could not connect to server. Please check your connection.");
         }
         throw error;

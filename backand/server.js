@@ -13,13 +13,18 @@ const sharingRoutes = require('./routes/sharingRoutes');
 const { protect } = require('./middleware/authMiddleware');
 
 // הגדרות CORS מפורטות - מתוקן עבור Render ו-GitHub Pages
-const corsOptions = {
-    origin: ['https://mmmtweb2.github.io', 'http://localhost:5173', 'https://dozen-backend.onrender.com', 'http://localhost:5000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    optionsSuccessStatus: 200
-};
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
 
 // קביעת כתובת הפרונט-אנד בהתאם לסביבה
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
@@ -44,7 +49,6 @@ connectDB();
 const app = express();
 
 // הגדרת middlewares בסיסיים
-app.use(cors(corsOptions)); // שימוש בהגדרות CORS המעודכנות
 app.use(express.json());
 
 // נתיב בדיקה בסיסי
